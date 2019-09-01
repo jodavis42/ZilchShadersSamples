@@ -8,6 +8,7 @@
 namespace Graphics
 {
 
+//-------------------------------------------------------------------TextureData
 TextureData::TextureData()
 {
   mTexture = nullptr;

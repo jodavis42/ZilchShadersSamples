@@ -16,75 +16,6 @@
 namespace Graphics
 {
 
-class GlMeshData
-{
-public:
-  size_t mIndexCount;
-  size_t mVertexCount;
-
-  unsigned int mTriangleArray;
-  unsigned int mTriangleVertex;
-  unsigned int mTriangleIndex;
-};
-
-class GlTextureData
-{
-public:
-  unsigned int mTextureId;
-};
-
-class GlShaderData
-{
-public:
-  int mVertexShaderId;
-  int mPixelShaderId;
-  int mProgramId;
-};
-
-class GlUniformBufferData
-{
-public:
-  int mBufferId;
-  int mBlockBinding;
-};
-
-
-struct GlTextureEnums
-{
-  GLint mInternalFormat;
-  GLint mFormat;
-  GLint mType;
-};
-
-GlTextureEnums gTextureEnums[] =
-{
-  {/* internalFormat    , format            , type */                          }, // None
-  {GL_R8                , GL_RED            , GL_UNSIGNED_BYTE                 }, // R8
-  {GL_RG8               , GL_RG             , GL_UNSIGNED_BYTE                 }, // RG8
-  {GL_RGB8              , GL_RGB            , GL_UNSIGNED_BYTE                 }, // RGB8
-  {GL_RGBA8             , GL_RGBA           , GL_UNSIGNED_BYTE                 }, // RGBA8
-  {GL_R16               , GL_RED            , GL_UNSIGNED_SHORT                }, // R16
-  {GL_RG16              , GL_RG             , GL_UNSIGNED_SHORT                }, // RG16
-  {GL_RGB16             , GL_RGB            , GL_UNSIGNED_SHORT                }, // RGB16
-  {GL_RGBA16            , GL_RGBA           , GL_UNSIGNED_SHORT                }, // RGBA16
-  {GL_R16F              , GL_RED            , GL_HALF_FLOAT                    }, // R16f
-  {GL_RG16F             , GL_RG             , GL_HALF_FLOAT                    }, // RG16f
-  {GL_RGB16F            , GL_RGB            , GL_HALF_FLOAT                    }, // RGB16f
-  {GL_RGBA16F           , GL_RGBA           , GL_HALF_FLOAT                    }, // RGBA16f
-  {GL_R32F              , GL_RED            , GL_FLOAT                         }, // R32f
-  {GL_RG32F             , GL_RG             , GL_FLOAT                         }, // RG32f
-  {GL_RGB32F            , GL_RGB            , GL_FLOAT                         }, // RGB32f
-  {GL_RGBA32F           , GL_RGBA           , GL_FLOAT                         }, // RGBA32f
-  {GL_SRGB8             , GL_RGB            , GL_UNSIGNED_BYTE                 }, // SRGB8
-  {GL_SRGB8_ALPHA8      , GL_RGBA           , GL_UNSIGNED_BYTE                 }, // SRGB8A8
-  {GL_DEPTH_COMPONENT16 , GL_DEPTH_COMPONENT, GL_UNSIGNED_SHORT                }, // Depth16
-  {GL_DEPTH_COMPONENT24 , GL_DEPTH_COMPONENT, GL_UNSIGNED_INT                  }, // Depth24
-  {GL_DEPTH_COMPONENT32 , GL_DEPTH_COMPONENT, GL_UNSIGNED_INT                  }, // Depth32
-  {GL_DEPTH_COMPONENT32F, GL_DEPTH_COMPONENT, GL_FLOAT                         }, // Depth32f
-  {GL_DEPTH24_STENCIL8  , GL_DEPTH_STENCIL  , GL_UNSIGNED_INT_24_8             }, // Depth24Stencil8
-  {GL_DEPTH32F_STENCIL8 , GL_DEPTH_STENCIL  , GL_FLOAT_32_UNSIGNED_INT_24_8_REV}  // Depth32fStencil8Pad24
-};
-
 static int mPositionLocation = 0;
 static int mNormalLocation = 1;
 static int mUvLocation = 4;
@@ -129,6 +60,80 @@ bool ReportOpenGLErrors(const char* file, int line)
 }
 #define PrintOpenGLErrors() ReportOpenGLErrors(__FILE__, __LINE__)
 
+//-------------------------------------------------------------------GlMeshData
+class GlMeshData
+{
+public:
+  size_t mIndexCount;
+  size_t mVertexCount;
+
+  unsigned int mTriangleArray;
+  unsigned int mTriangleVertex;
+  unsigned int mTriangleIndex;
+};
+
+//-------------------------------------------------------------------GlTextureData
+class GlTextureData
+{
+public:
+  unsigned int mTextureId;
+};
+
+//-------------------------------------------------------------------GlShaderData
+class GlShaderData
+{
+public:
+  int mVertexShaderId;
+  int mPixelShaderId;
+  int mProgramId;
+};
+
+//-------------------------------------------------------------------GlUniformBufferData
+class GlUniformBufferData
+{
+public:
+  int mBufferId;
+  int mBlockBinding;
+};
+
+//-------------------------------------------------------------------GlTextureEnums
+struct GlTextureEnums
+{
+  GLint mInternalFormat;
+  GLint mFormat;
+  GLint mType;
+};
+
+GlTextureEnums gTextureEnums[] =
+{
+  {/* internalFormat    , format            , type */                          }, // None
+  {GL_R8                , GL_RED            , GL_UNSIGNED_BYTE                 }, // R8
+  {GL_RG8               , GL_RG             , GL_UNSIGNED_BYTE                 }, // RG8
+  {GL_RGB8              , GL_RGB            , GL_UNSIGNED_BYTE                 }, // RGB8
+  {GL_RGBA8             , GL_RGBA           , GL_UNSIGNED_BYTE                 }, // RGBA8
+  {GL_R16               , GL_RED            , GL_UNSIGNED_SHORT                }, // R16
+  {GL_RG16              , GL_RG             , GL_UNSIGNED_SHORT                }, // RG16
+  {GL_RGB16             , GL_RGB            , GL_UNSIGNED_SHORT                }, // RGB16
+  {GL_RGBA16            , GL_RGBA           , GL_UNSIGNED_SHORT                }, // RGBA16
+  {GL_R16F              , GL_RED            , GL_HALF_FLOAT                    }, // R16f
+  {GL_RG16F             , GL_RG             , GL_HALF_FLOAT                    }, // RG16f
+  {GL_RGB16F            , GL_RGB            , GL_HALF_FLOAT                    }, // RGB16f
+  {GL_RGBA16F           , GL_RGBA           , GL_HALF_FLOAT                    }, // RGBA16f
+  {GL_R32F              , GL_RED            , GL_FLOAT                         }, // R32f
+  {GL_RG32F             , GL_RG             , GL_FLOAT                         }, // RG32f
+  {GL_RGB32F            , GL_RGB            , GL_FLOAT                         }, // RGB32f
+  {GL_RGBA32F           , GL_RGBA           , GL_FLOAT                         }, // RGBA32f
+  {GL_SRGB8             , GL_RGB            , GL_UNSIGNED_BYTE                 }, // SRGB8
+  {GL_SRGB8_ALPHA8      , GL_RGBA           , GL_UNSIGNED_BYTE                 }, // SRGB8A8
+  {GL_DEPTH_COMPONENT16 , GL_DEPTH_COMPONENT, GL_UNSIGNED_SHORT                }, // Depth16
+  {GL_DEPTH_COMPONENT24 , GL_DEPTH_COMPONENT, GL_UNSIGNED_INT                  }, // Depth24
+  {GL_DEPTH_COMPONENT32 , GL_DEPTH_COMPONENT, GL_UNSIGNED_INT                  }, // Depth32
+  {GL_DEPTH_COMPONENT32F, GL_DEPTH_COMPONENT, GL_FLOAT                         }, // Depth32f
+  {GL_DEPTH24_STENCIL8  , GL_DEPTH_STENCIL  , GL_UNSIGNED_INT_24_8             }, // Depth24Stencil8
+  {GL_DEPTH32F_STENCIL8 , GL_DEPTH_STENCIL  , GL_FLOAT_32_UNSIGNED_INT_24_8_REV}  // Depth32fStencil8Pad24
+};
+
+//-------------------------------------------------------------------OpenGlRenderer
 OpenGlRenderer::OpenGlRenderer()
 {
   glewInit();

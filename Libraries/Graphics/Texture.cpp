@@ -8,6 +8,7 @@
 namespace Graphics
 {
 
+//-------------------------------------------------------------------Texture
 Texture::Texture()
 {
   mSizeX = mSizeY = 1;

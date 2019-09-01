@@ -16,6 +16,7 @@ class GlTextureData;
 class GlShaderData;
 class GlUniformBufferData;
 
+//-------------------------------------------------------------------OpenGlRenderer
 class OpenGlRenderer : public Renderer
 {
 public:

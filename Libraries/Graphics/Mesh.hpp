@@ -4,10 +4,12 @@
 #pragma once
 
 #include "GraphicsStandard.hpp"
+#include "ResourceLibrary.hpp"
 
 namespace Graphics
 {
 
+//-------------------------------------------------------------------MeshElementType
 struct MeshElementType
 {
   enum Enum
@@ -18,6 +20,7 @@ struct MeshElementType
   };
 };
 
+//-------------------------------------------------------------------Vertex
 struct Vertex
 {
   Vertex();
@@ -33,6 +36,7 @@ struct Vertex
   Vector4 mColor;
 };
 
+//-------------------------------------------------------------------Mesh
 class Mesh
 {
 public:
@@ -46,6 +50,12 @@ public:
   MeshElementType::Enum mElementType;
   int mPatchSize;
   String mName;
+};
+
+//-------------------------------------------------------------------MeshLibrary
+class MeshLibrary : public ResourceLibrary<Mesh>
+{
+public:
 };
 
 }//namespace Graphics

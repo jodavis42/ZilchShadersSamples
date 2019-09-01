@@ -8,6 +8,7 @@
 namespace Graphics
 {
 
+//-------------------------------------------------------------------Vertex
 Vertex::Vertex()
 {
   Set(Vector3::cZero, Vector3::cZAxis);
@@ -36,6 +37,7 @@ void Vertex::Set(const Vector3& pos, const Vector3& normal, const Vector2& uv, c
   mColor = color;
 }
 
+//-------------------------------------------------------------------Mesh
 Mesh::Mesh()
 {
   mElementType = MeshElementType::Triangles;

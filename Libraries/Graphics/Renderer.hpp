@@ -13,7 +13,7 @@ class Texture;
 class Shader;
 class UniformBuffer;
 
-
+//-------------------------------------------------------------------TextureData
 class TextureData
 {
 public:
@@ -24,6 +24,7 @@ public:
   int mTextureSlot;
 };
 
+//-------------------------------------------------------------------ObjectData
 class ObjectData
 {
 public:
@@ -39,6 +40,7 @@ public:
   Array<TextureData> mTextures;
 };
 
+//-------------------------------------------------------------------CameraData
 class CameraData
 {
 public:
@@ -53,6 +55,7 @@ public:
   //float mFov;
 };
 
+//-------------------------------------------------------------------RenderData
 class RenderData
 {
 public:
@@ -61,6 +64,7 @@ public:
   CameraData mCameraData;
 };
 
+//-------------------------------------------------------------------Renderer
 class Renderer
 {
 public:

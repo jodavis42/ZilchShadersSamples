@@ -15,6 +15,8 @@ target_sources(Graphics
     ${CMAKE_CURRENT_LIST_DIR}/ShaderProgram.hpp
     ${CMAKE_CURRENT_LIST_DIR}/Renderer.cpp
     ${CMAKE_CURRENT_LIST_DIR}/Renderer.hpp
+    ${CMAKE_CURRENT_LIST_DIR}/ResourceLibrary.inl
+    ${CMAKE_CURRENT_LIST_DIR}/ResourceLibrary.hpp
     ${CMAKE_CURRENT_LIST_DIR}/OpenGlRenderer.cpp
     ${CMAKE_CURRENT_LIST_DIR}/OpenGlRenderer.hpp
     ${CMAKE_CURRENT_LIST_DIR}/FrameworkZilchShaderGlslBackend.cpp

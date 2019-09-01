@@ -4,10 +4,12 @@
 #pragma once
 
 #include "GraphicsStandard.hpp"
+#include "ResourceLibrary.hpp"
 
 namespace Graphics
 {
 
+//-------------------------------------------------------------------TextureFormat
 struct TextureFormat
 {
   enum Enum
@@ -23,6 +25,7 @@ struct TextureFormat
   };
 };
 
+//-------------------------------------------------------------------TextureType
 struct TextureType
 {
   enum Enum
@@ -31,6 +34,7 @@ struct TextureType
   };
 };
 
+//-------------------------------------------------------------------TextureFiltering
 struct TextureFiltering
 {
   enum Enum
@@ -39,6 +43,7 @@ struct TextureFiltering
   };
 };
 
+//-------------------------------------------------------------------TextureAddressing
 struct TextureAddressing
 {
   enum Enum
@@ -47,6 +52,7 @@ struct TextureAddressing
   };
 };
 
+//-------------------------------------------------------------------Texture
 class Texture
 {
 public:
@@ -61,6 +67,13 @@ public:
   TextureAddressing::Enum mAddressingX;
   TextureAddressing::Enum mAddressingY;
   Array<float> mTextureData;
+  String mName;
+};
+
+//-------------------------------------------------------------------TextureLibrary
+class TextureLibrary : public ResourceLibrary<Texture>
+{
+public:
 };
 
 }//namespace Graphics
