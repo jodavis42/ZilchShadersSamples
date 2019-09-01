@@ -314,8 +314,9 @@ void OpenGlRenderer::Draw(ObjectData& objData)
   for(size_t j = 0; j < objData.mTextures.Size(); ++j)
   {
     TextureData& textureData = objData.mTextures[j];
-    GlTextureData* glTexture = mTextureMap[textureData.mTexture];
-    BindTextureInternal(&textureData, glTexture);
+    GlTextureData* glTexture = mTextureMap.FindValue(textureData.mTexture, nullptr);
+    if(glTexture != nullptr)
+      BindTextureInternal(&textureData, glTexture);
   }
 
   glBindVertexArray(glMesh->mTriangleArray);
