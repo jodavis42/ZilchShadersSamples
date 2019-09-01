@@ -1,0 +1,25 @@
+[Vertex]
+struct Vertex
+{
+  [AppBuiltInInput] var LocalToWorld : Real4x4;
+  [AppBuiltInInput] var WorldToView : Real4x4;
+  [AppBuiltInInput] var ViewToPerspective : Real4x4;
+
+  [StageInput] var LocalPosition : Real3;
+  [StageInput] var LocalNormal : Real3;
+
+  [Output] var ViewPosition : Real3;
+  [Output] var ViewNormal : Real3;
+
+  [HardwareBuiltInOutput] var ApiPerspectivePosition : Real4;
+
+  function Main()
+  {
+    var localToView = Math.Multiply(this.WorldToView, this.LocalToWorld);
+    var localToPerspective = Math.Multiply(this.ViewToPerspective, localToView);
+
+    var perspectivePosition = Math.Multiply(localToPerspective, Real4(this.LocalPosition, 1.0));
+
+    this.ApiPerspectivePosition = perspectivePosition;
+  }
+}

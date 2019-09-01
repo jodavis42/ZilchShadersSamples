@@ -1,0 +1,1 @@
+Zilch shaders are a high level shader language that uses the SPIRV toolchain to compile to native shader code. Zilch shaders make it easy to write flexible code for shaders. In addition, a compositing system exists to allow composing more complex shaders from smaller re-usable pieces.

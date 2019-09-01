@@ -1,0 +1,15 @@
+[Pixel]
+struct Pixel
+{
+  [Input] var Uv : Real2;
+  [Input] var FrameTime : Real = 1.0;
+  [StageOutput] var Target0 : Real4;
+
+  function Main()
+  {
+    
+    this.Uv = Math.Sin(this.Uv + Real2(this.FrameTime));
+    this.Uv = (this.Uv + Real2(1)) / 2.0;
+    this.Target0 = Real4(this.Uv, 0, 1);
+  }
+}

@@ -1,0 +1,3 @@
+[submodule "ZilchShaders"]
+	path = ZilchShaders
+	url = https://github.com/jodavis42/ZilchShaders
