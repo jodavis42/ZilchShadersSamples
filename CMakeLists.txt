@@ -38,7 +38,7 @@ add_definitions(-DPLATFORM_WINDOWS=1 -DPLATFORM_HARDWARE=1 -DPLATFORM_NAME="Win"
 add_subdirectory(ZilchShaders)
 add_subdirectory(External)
 add_subdirectory(Shaders)
-#add_subdirectory(Libraries)
+add_subdirectory(Libraries)
 add_subdirectory(Applications)
 
 set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT Framework) 

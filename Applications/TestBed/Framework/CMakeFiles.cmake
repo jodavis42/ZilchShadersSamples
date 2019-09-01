@@ -13,24 +13,8 @@ target_sources(Framework
     ${CMAKE_CURRENT_LIST_DIR}/Camera.cpp
     ${CMAKE_CURRENT_LIST_DIR}/Camera.hpp
 
-    ${CMAKE_CURRENT_LIST_DIR}/Material.cpp
-    ${CMAKE_CURRENT_LIST_DIR}/Material.hpp
-    ${CMAKE_CURRENT_LIST_DIR}/Mesh.cpp
-    ${CMAKE_CURRENT_LIST_DIR}/Mesh.hpp
-    ${CMAKE_CURRENT_LIST_DIR}/Texture.cpp
-    ${CMAKE_CURRENT_LIST_DIR}/Texture.hpp
-    ${CMAKE_CURRENT_LIST_DIR}/Model.cpp
-    ${CMAKE_CURRENT_LIST_DIR}/Model.hpp
     ${CMAKE_CURRENT_LIST_DIR}/ObjReader.cpp
     ${CMAKE_CURRENT_LIST_DIR}/ObjReader.hpp
     ${CMAKE_CURRENT_LIST_DIR}/Properties.cpp
     ${CMAKE_CURRENT_LIST_DIR}/Properties.hpp
-    ${CMAKE_CURRENT_LIST_DIR}/ShaderProgram.cpp
-    ${CMAKE_CURRENT_LIST_DIR}/ShaderProgram.hpp
-    ${CMAKE_CURRENT_LIST_DIR}/Renderer.cpp
-    ${CMAKE_CURRENT_LIST_DIR}/Renderer.hpp
-    ${CMAKE_CURRENT_LIST_DIR}/OpenGlRenderer.cpp
-    ${CMAKE_CURRENT_LIST_DIR}/OpenGlRenderer.hpp
-    ${CMAKE_CURRENT_LIST_DIR}/FrameworkZilchShaderGlslBackend.cpp
-    ${CMAKE_CURRENT_LIST_DIR}/FrameworkZilchShaderGlslBackend.hpp
 )

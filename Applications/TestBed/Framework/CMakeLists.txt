@@ -23,6 +23,7 @@ target_link_libraries(Framework
                       ZilchShaders
                       OpenGL
                       Glew32
+                      Graphics
 )
 
 #find_library(SDL2_DLL SDL2.dll PATHS ../../../)

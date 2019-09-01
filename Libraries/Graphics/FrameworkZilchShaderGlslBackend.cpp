@@ -1,11 +1,9 @@
 ///////////////////////////////////////////////////////////////////////////////
-///
 /// Authors: Joshua Davis
-/// Copyright 2018, DigiPen Institute of Technology
-///
 ///////////////////////////////////////////////////////////////////////////////
-#include "FrameworkZilchShaderGlslBackend.hpp"
+#include "Precompiled.hpp"
 
+#include "FrameworkZilchShaderGlslBackend.hpp"
 
 #include "SPIRV-Cross/spirv_glsl.hpp"
 
