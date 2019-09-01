@@ -3,8 +3,10 @@
 #include "FrameworkStandard.hpp"
 
 #include "Renderer.hpp"
+#include "Texture.hpp"
 
 class GlMeshData;
+class GlTextureData;
 class GlShaderData;
 class GlUniformBufferData;
 
@@ -18,6 +20,9 @@ public:
 
   void CreateMesh(Mesh* mesh) override;
   void DestroyMesh(Mesh* mesh) override;
+
+  void CreateTexture(Texture* texture) override;
+  void DestroyTexture(Texture* texture) override;
 
   void CreateShader(Shader* shader) override;
   void DestroyShader(Shader* shader) override;
@@ -40,8 +45,15 @@ public:
 
   void BindBufferInternal(GlShaderData* glShader, UniformBuffer* buffer, GlUniformBufferData* glBuffer);
   void UpdateBufferDataInternal(UniformBuffer* buffer, GlUniformBufferData* glBuffer);
+  void BindTextureInternal(TextureData* textureData, GlTextureData* glTexture);
+
+  int GetTextureType(TextureType::Enum type);
+  int GetTextureAddressing(TextureAddressing::Enum addressing);
+  int GetTextureMinFiltering(TextureFiltering::Enum filtering);
+  int GetTextureMagFiltering(TextureFiltering::Enum filtering);
 
   HashMap<Mesh*, GlMeshData*> mGlMeshMap;
+  HashMap<Texture*, GlTextureData*> mTextureMap;
   HashMap<Shader*, GlShaderData*> mShaderMap;
   HashMap<UniformBuffer*, GlUniformBufferData*> mUniformBufferMap;
 };

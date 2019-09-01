@@ -3,6 +3,7 @@ struct Pixel
 {
   [Input] var Uv : Real2;
   [Input] var FrameTime : Real = 1.0;
+  [Input] var SampledImage : SampledImage2d;
   [StageOutput] var Target0 : Real4;
 
   function Main()
@@ -10,6 +11,8 @@ struct Pixel
     
     this.Uv = Math.Sin(this.Uv + Real2(this.FrameTime));
     this.Uv = (this.Uv + Real2(1)) / 2.0;
-    this.Target0 = Real4(this.Uv, 0, 1);
+    //this.Target0 = Real4(this.Uv, 0, 1);
+
+    this.Target0 = this.SampledImage.Sample(this.Uv);
   }
 }

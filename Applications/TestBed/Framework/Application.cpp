@@ -39,6 +39,7 @@ void Application::Initialize()
   Zero::ShaderSettingsLibrary::GetInstance().GetLibrary();
 
   InitializeShaders();
+  InitializeTextures();
   InitializeMeshes();
 
   mBuffer = new UniformBuffer();
@@ -69,6 +70,32 @@ void  Application::InitializeMeshes()
   mRenderer->CreateMesh(mesh);
 
   mMeshes.PushBack(mesh);
+}
+
+void Application::InitializeTextures()
+{
+  Texture* texture = new Texture();
+  texture->mSizeX = 16;
+  texture->mSizeY = 16;
+  const int size = texture->mSizeX *  texture->mSizeY * 3;
+
+  texture->mTextureData.Resize(size);
+  
+  for(int y = 0; y < texture->mSizeY; ++y)
+  {
+    for(int x = 0; x < texture->mSizeX; ++x)
+    {
+      int index = (x + y * texture->mSizeX) * 3;
+      float value = (x / (float)texture->mSizeX) * (y / (float)texture->mSizeY);
+      texture->mTextureData[index + 0] = value;
+      texture->mTextureData[index + 1] = value;
+      texture->mTextureData[index + 2] = value;
+    }
+  }
+  mRenderer->CreateTexture(texture);
+  // Clear data (not needed since it's uploaded)
+  texture->mTextureData.Clear();
+  mTextures.PushBack(texture);
 }
 
 typedef Zilch::Ref<Zero::ShaderTranslationPassResult> TranslationPassResultRef;
@@ -216,6 +243,10 @@ void Application::Draw()
   transformBuffer.mBufferName = "Shader_VertexTransformData";
   transformBuffer.mData.Resize(256);
 
+  TextureData textureData;
+  textureData.mTexture = mTextures[0];
+  textureData.mTextureSlot = 0;
+
   Matrix4 viewToPerspective = cameraData.mViewToPerspective;
   Matrix4 worldToView = cameraData.mWorldToView.Transposed();
   Matrix4 localToWorld = objData.mLocalToWorld;
@@ -226,6 +257,7 @@ void Application::Draw()
   objData.mShader = mShaders[0];
   objData.mPreBoundBuffers.PushBack(mBuffer);
   objData.mBuffersToBind.PushBack(&transformBuffer);
+  objData.mTextures.PushBack(textureData);
 
   RenderData renderData;
   renderData.mObjects.PushBack(objData);

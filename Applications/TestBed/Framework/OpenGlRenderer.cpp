@@ -6,6 +6,7 @@
 #include "glew.h"
 
 #include "Mesh.hpp"
+#include "Texture.hpp"
 #include "ShaderProgram.hpp"
 #include "FrameworkZilchShaderGlslBackend.hpp"
 
@@ -18,6 +19,12 @@ public:
   unsigned int mTriangleArray;
   unsigned int mTriangleVertex;
   unsigned int mTriangleIndex;
+};
+
+class GlTextureData
+{
+public:
+  unsigned int mTextureId;
 };
 
 class GlShaderData
@@ -33,6 +40,43 @@ class GlUniformBufferData
 public:
   int mBufferId;
   int mBlockBinding;
+};
+
+
+struct GlTextureEnums
+{
+  GLint mInternalFormat;
+  GLint mFormat;
+  GLint mType;
+};
+
+GlTextureEnums gTextureEnums[] =
+{
+  {/* internalFormat    , format            , type */                          }, // None
+  {GL_R8                , GL_RED            , GL_UNSIGNED_BYTE                 }, // R8
+  {GL_RG8               , GL_RG             , GL_UNSIGNED_BYTE                 }, // RG8
+  {GL_RGB8              , GL_RGB            , GL_UNSIGNED_BYTE                 }, // RGB8
+  {GL_RGBA8             , GL_RGBA           , GL_UNSIGNED_BYTE                 }, // RGBA8
+  {GL_R16               , GL_RED            , GL_UNSIGNED_SHORT                }, // R16
+  {GL_RG16              , GL_RG             , GL_UNSIGNED_SHORT                }, // RG16
+  {GL_RGB16             , GL_RGB            , GL_UNSIGNED_SHORT                }, // RGB16
+  {GL_RGBA16            , GL_RGBA           , GL_UNSIGNED_SHORT                }, // RGBA16
+  {GL_R16F              , GL_RED            , GL_HALF_FLOAT                    }, // R16f
+  {GL_RG16F             , GL_RG             , GL_HALF_FLOAT                    }, // RG16f
+  {GL_RGB16F            , GL_RGB            , GL_HALF_FLOAT                    }, // RGB16f
+  {GL_RGBA16F           , GL_RGBA           , GL_HALF_FLOAT                    }, // RGBA16f
+  {GL_R32F              , GL_RED            , GL_FLOAT                         }, // R32f
+  {GL_RG32F             , GL_RG             , GL_FLOAT                         }, // RG32f
+  {GL_RGB32F            , GL_RGB            , GL_FLOAT                         }, // RGB32f
+  {GL_RGBA32F           , GL_RGBA           , GL_FLOAT                         }, // RGBA32f
+  {GL_SRGB8             , GL_RGB            , GL_UNSIGNED_BYTE                 }, // SRGB8
+  {GL_SRGB8_ALPHA8      , GL_RGBA           , GL_UNSIGNED_BYTE                 }, // SRGB8A8
+  {GL_DEPTH_COMPONENT16 , GL_DEPTH_COMPONENT, GL_UNSIGNED_SHORT                }, // Depth16
+  {GL_DEPTH_COMPONENT24 , GL_DEPTH_COMPONENT, GL_UNSIGNED_INT                  }, // Depth24
+  {GL_DEPTH_COMPONENT32 , GL_DEPTH_COMPONENT, GL_UNSIGNED_INT                  }, // Depth32
+  {GL_DEPTH_COMPONENT32F, GL_DEPTH_COMPONENT, GL_FLOAT                         }, // Depth32f
+  {GL_DEPTH24_STENCIL8  , GL_DEPTH_STENCIL  , GL_UNSIGNED_INT_24_8             }, // Depth24Stencil8
+  {GL_DEPTH32F_STENCIL8 , GL_DEPTH_STENCIL  , GL_FLOAT_32_UNSIGNED_INT_24_8_REV}  // Depth32fStencil8Pad24
 };
 
 static int mPositionLocation = 0;
@@ -78,19 +122,6 @@ bool ReportOpenGLErrors(const char* file, int line)
   return false;
 }
 #define PrintOpenGLErrors() ReportOpenGLErrors(__FILE__, __LINE__)
-
-struct GlTextureEnums
-{
-  GLint mInternalFormat;
-  GLint mFormat;
-  GLint mType;
-};
-// Two enum formats, the depth format and color
-GlTextureEnums gTextureEnums[] =
-{
-  {GL_RGBA32F, GL_RGBA, GL_FLOAT},
-  {GL_DEPTH_COMPONENT32F, GL_DEPTH_COMPONENT, GL_FLOAT}
-};
 
 OpenGlRenderer::OpenGlRenderer()
 {
@@ -153,6 +184,38 @@ void OpenGlRenderer::DestroyMesh(Mesh* mesh)
   glDeleteVertexArrays(1, &glMesh->mTriangleArray);
 
   delete glMesh;
+}
+
+void OpenGlRenderer::CreateTexture(Texture* texture)
+{
+  GlTextureData* glTexture = new GlTextureData();
+
+  int sizeX = texture->mSizeX;
+  int sizeY = texture->mSizeY;
+  
+  GlTextureEnums textureFormat = gTextureEnums[texture->mFormat];
+  GLint textureType = GetTextureType(texture->mType);
+
+  glGenTextures(1, &glTexture->mTextureId);
+  glBindTexture(GL_TEXTURE_2D, glTexture->mTextureId);
+
+  glTexParameteri(textureType, GL_TEXTURE_WRAP_S, texture->mAddressingX);
+  glTexParameteri(textureType, GL_TEXTURE_WRAP_T, texture->mAddressingY);
+  glTexParameteri(textureType, GL_TEXTURE_MIN_FILTER, texture->mMinFilter);
+  glTexParameteri(textureType, GL_TEXTURE_MAG_FILTER, texture->mMagFilter);
+
+  glTexImage2D(textureType, 0, textureFormat.mInternalFormat, sizeX, sizeY, 0, textureFormat.mFormat, textureFormat.mType, texture->mTextureData.Data());
+  glGenerateMipmap(textureType);
+  glBindTexture(textureType, 0);
+
+  mTextureMap[texture] = glTexture;
+}
+
+void OpenGlRenderer::DestroyTexture(Texture* texture)
+{
+  GlTextureData* glTexture = mTextureMap[texture];
+  mTextureMap.Erase(texture);
+  delete glTexture;
 }
 
 void OpenGlRenderer::CreateShader(Shader* shader)
@@ -236,6 +299,12 @@ void OpenGlRenderer::Draw(ObjectData& objData)
     UniformBuffer* buffer = objData.mPreBoundBuffers[j];
     GlUniformBufferData* glBuffer = mUniformBufferMap[buffer];
     BindBufferInternal(glShader, buffer, glBuffer);
+  }
+  for(size_t j = 0; j < objData.mTextures.Size(); ++j)
+  {
+    TextureData& textureData = objData.mTextures[j];
+    GlTextureData* glTexture = mTextureMap[textureData.mTexture];
+    BindTextureInternal(&textureData, glTexture);
   }
 
   glBindVertexArray(glMesh->mTriangleArray);
@@ -447,6 +516,62 @@ void OpenGlRenderer::UpdateBufferDataInternal(UniformBuffer* buffer, GlUniformBu
   glBindBuffer(GL_UNIFORM_BUFFER, glBuffer->mBufferId);
   glBufferData(GL_UNIFORM_BUFFER, buffer->mData.Size(), buffer->mData.Data(), GL_DYNAMIC_DRAW);
   glBindBuffer(GL_UNIFORM_BUFFER, 0);
+}
+
+void OpenGlRenderer::BindTextureInternal(TextureData* textureData, GlTextureData* glTexture)
+{
+  int textureType = GetTextureType(textureData->mTexture->mType);
+  // Clear anything bound to this texture unit
+  glActiveTexture(GL_TEXTURE0 + textureData->mTextureSlot);
+  glBindTexture(GL_TEXTURE_2D, 0);
+  glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
+  //if(samplerObjects)
+  //  glBindSampler(textureData->mTextureSlot, 0);
+  // Bind texture
+  glBindTexture(textureType, glTexture->mTextureId);
+}
+
+int OpenGlRenderer::GetTextureType(TextureType::Enum type)
+{
+  switch(type)
+  {
+  case TextureType::Texture2D: return GL_TEXTURE_2D;
+  case TextureType::TextureCube: return GL_TEXTURE_CUBE_MAP;
+  default: return 0;
+  }
+}
+
+int OpenGlRenderer::GetTextureAddressing(TextureAddressing::Enum addressing)
+{
+  switch(addressing)
+  {
+  case TextureAddressing::Clamp: return GL_CLAMP;
+  case TextureAddressing::Mirror: return GL_MIRRORED_REPEAT;
+  case TextureAddressing::Repeat: return GL_REPEAT;
+  default: return 0;
+  }
+}
+
+int OpenGlRenderer::GetTextureMinFiltering(TextureFiltering::Enum filtering)
+{
+  switch(filtering)
+  {
+  case TextureFiltering::Nearest:   return GL_NEAREST_MIPMAP_NEAREST;
+  case TextureFiltering::Bilinear:  return GL_LINEAR_MIPMAP_NEAREST;
+  case TextureFiltering::Trilinear: return GL_LINEAR_MIPMAP_LINEAR;
+  default: return 0;
+  }
+}
+
+int OpenGlRenderer::GetTextureMagFiltering(TextureFiltering::Enum filtering)
+{
+  switch(filtering)
+  {
+  case TextureFiltering::Nearest:   return GL_NEAREST;
+  case TextureFiltering::Bilinear:  return GL_LINEAR;
+  case TextureFiltering::Trilinear: return GL_LINEAR;
+  default: return 0;
+  }
 }
 
 //

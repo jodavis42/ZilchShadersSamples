@@ -17,6 +17,8 @@ target_sources(Framework
     ${CMAKE_CURRENT_LIST_DIR}/Material.hpp
     ${CMAKE_CURRENT_LIST_DIR}/Mesh.cpp
     ${CMAKE_CURRENT_LIST_DIR}/Mesh.hpp
+    ${CMAKE_CURRENT_LIST_DIR}/Texture.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/Texture.hpp
     ${CMAKE_CURRENT_LIST_DIR}/Model.cpp
     ${CMAKE_CURRENT_LIST_DIR}/Model.hpp
     ${CMAKE_CURRENT_LIST_DIR}/ObjReader.cpp

@@ -3,8 +3,20 @@
 #include "FrameworkStandard.hpp"
 
 class Mesh;
+class Texture;
 class Shader;
 class UniformBuffer;
+
+
+class TextureData
+{
+public:
+  TextureData();
+  TextureData(Texture* texture, int textureSlot);
+
+  Texture* mTexture;
+  int mTextureSlot;
+};
 
 class ObjectData
 {
@@ -18,6 +30,7 @@ public:
   Shader* mShader;
   Array<UniformBuffer*> mPreBoundBuffers;
   Array<UniformBuffer*> mBuffersToBind;
+  Array<TextureData> mTextures;
 };
 
 class CameraData
@@ -51,6 +64,9 @@ public:
 
   virtual void CreateMesh(Mesh* mesh) {};
   virtual void DestroyMesh(Mesh* mesh) {};
+
+  virtual void CreateTexture(Texture* texture) {};
+  virtual void DestroyTexture(Texture* texture) {};
 
   virtual void CreateShader(Shader* shader) {};
   virtual void DestroyShader(Shader* shader) {};

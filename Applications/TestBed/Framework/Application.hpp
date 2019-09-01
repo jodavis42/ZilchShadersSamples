@@ -2,6 +2,7 @@
 
 #include "Renderer.hpp"
 #include "Mesh.hpp"
+#include "Texture.hpp"
 #include "Camera.hpp"
 #include "ShaderProgram.hpp"
 #include "Material.hpp"
@@ -14,6 +15,7 @@ public:
 
   void Initialize();
   void InitializeMeshes();
+  void InitializeTextures();
   void InitializeShaders();
 
   void Update(float frameTime);
@@ -31,6 +33,7 @@ public:
   Renderer* mRenderer;
   Camera* mCamera;
   Array<Mesh*> mMeshes;
+  Array<Texture*> mTextures;
   Array<Shader*> mShaders;
   UniformBuffer* mBuffer;
   float mFrameTime;
