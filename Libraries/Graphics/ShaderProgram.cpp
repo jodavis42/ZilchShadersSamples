@@ -5,6 +5,9 @@
 
 #include "ShaderProgram.hpp"
 
+namespace Graphics
+{
+
 void ZilchCompilerErrorCallback(Zilch::ErrorEvent* e)
 {
   ZPrint("%s", e->GetFormattedMessage(Zilch::MessageFormat::MsvcCpp).c_str());
@@ -129,3 +132,5 @@ Zero::ZilchShaderSpirVSettings* SampleZilchShaderIRGenerator::CreateZilchShaderS
 
   return settings;
 }
+
+}//namespace Graphics

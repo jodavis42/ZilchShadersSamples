@@ -13,6 +13,9 @@
 #include "ShaderProgram.hpp"
 #include "FrameworkZilchShaderGlslBackend.hpp"
 
+namespace Graphics
+{
+
 class GlMeshData
 {
 public:
@@ -195,7 +198,7 @@ void OpenGlRenderer::CreateTexture(Texture* texture)
 
   int sizeX = texture->mSizeX;
   int sizeY = texture->mSizeY;
-  
+
   GlTextureEnums textureFormat = gTextureEnums[texture->mFormat];
   GLint textureType = GetTextureType(texture->mType);
 
@@ -330,38 +333,6 @@ void OpenGlRenderer::Draw(RenderData& renderData)
   {
     ObjectData& objData = renderData.mObjects[i];
     Draw(objData);
-    //GlMeshData* glMesh = mGlMeshMap.FindValue(objData.mMesh, nullptr);
-    //GlShaderData* glShader = mShaderMap.FindValue(objData.mShader, nullptr);
-    //
-    //glUseProgram(glShader->mProgramId);
-    //
-    //GLuint blockBinding = 0;
-    //for(size_t j = 0; j < objData.mBuffersToBind.Size(); ++j)
-    //{
-    //  UniformBuffer* buffer = objData.mBuffersToBind[j];
-    //  CreateBuffer(buffer);
-    //  GlUniformBufferData* glBuffer = mUniformBufferMap[buffer];
-    //  BindBufferInternal(glShader, buffer, glBuffer);
-    //}
-    //for(size_t j = 0; j < objData.mPreBoundBuffers.Size(); ++j)
-    //{
-    //  UniformBuffer* buffer = objData.mPreBoundBuffers[j];
-    //  GlUniformBufferData* glBuffer = mUniformBufferMap[buffer];
-    //  BindBufferInternal(glShader, buffer, glBuffer);
-    //}
-    //
-    //glBindVertexArray(glMesh->mTriangleArray);
-    //
-    //glDrawElements(GL_TRIANGLES, glMesh->mIndexCount, GL_UNSIGNED_INT, (void*)0);
-    //
-    //glBindVertexArray(0);
-    //glUseProgram(0);
-    //
-    //for(size_t j = 0; j < objData.mBuffersToBind.Size(); ++j)
-    //{
-    //  UniformBuffer* buffer = objData.mBuffersToBind[j];
-    //  DestroyBuffer(buffer);
-    //}
   }
 }
 
@@ -408,25 +379,6 @@ ZilchShaderIRBackend* OpenGlRenderer::CreateBackend()
   return new Zero::ZilchShaderGlslBackend();
 }
 
-
-//void GlRenderer::Reshape(int width, int height, float aspectRatio)
-//{
-//  mInternalData->mWidth = width;
-//  mInternalData->mHeight = height;
-//
-//  // Resize the render targe textures (probably slow, figure out later)
-//  for(size_t i = 0; i < mInternalData->mTextureIds.Size(); ++i)
-//  {
-//    glBindTexture(GL_TEXTURE_2D, mInternalData->mTextureIds[i]);
-//    glTexImage2D(GL_TEXTURE_2D, 0, gTextureEnums[0].mInternalFormat, width, height, 0, gTextureEnums[0].mFormat, gTextureEnums[0].mType, NULL);
-//  }
-//  glBindTexture(GL_TEXTURE_2D, mInternalData->mDepthId);
-//  glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT32F, width, height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
-//
-//  glBindTexture(GL_TEXTURE_2D, 0);
-//}
-//
-//
 bool OpenGlRenderer::CompileShaderInternal(const String& shaderSource, int shaderType, int& shaderId)
 {
   return CompileShaderInternal(shaderSource.c_str(), shaderSource.SizeInBytes(), shaderType, shaderId);
@@ -577,77 +529,4 @@ int OpenGlRenderer::GetTextureMagFiltering(TextureFiltering::Enum filtering)
   }
 }
 
-//
-//void GlRenderer::SetBuffer(UniformBufferData& bufferData)
-//{
-//
-//  // Get the expected buffer id
-//  GLuint bufferId = bufferData.mBufferId;
-//  // Get the actual uniform block's location
-//  //GLint blockIndex =  glGetUniformBlockIndex(programId, uniformBuffer.mReflectionData.mTypeName.c_str());
-//
-//  // A block index can be invalid if it's optimized away
-//  //if(blockIndex == GL_INVALID_INDEX)
-//  //  return;
-//
-//  // Bind the updated buffer data
-//  glBindBuffer(GL_UNIFORM_BUFFER, bufferId);
-//  glBufferData(GL_UNIFORM_BUFFER, bufferData.mData.mSize, bufferData.mData.mData, GL_DYNAMIC_DRAW);
-//  glBindBuffer(GL_UNIFORM_BUFFER, 0);
-//  PrintOpenGLErrors();
-//
-//  // There's an extra level of indirection here. You have to map the buffer block's index to an actual binding id.
-//
-//  // We need to map the uniform buffer's location to the binding id. This is defaultly set
-//  // to a value in the shader, but can optionally be overridden. This is necessary if
-//  // the binding ids overlap in different shader stages.
-//  GLuint blockBinding = bufferData.mBlockBinding; //uniformBuffer.mReflectionData.mBinding;
-//                                                  //if(!shaderManager->mGenerator->mSettings->mAllowUniformMaterialBufferIndexOverap)
-//                                                  //{
-//                                                  //  blockBinding = mUniformBindingId;
-//                                                  //  glUniformBlockBinding(programId, blockIndex, blockBinding);
-//                                                  //}
-//
-//                                                  // Bind the binding point to the actual uniform buffer data
-//  glBindBufferBase(GL_UNIFORM_BUFFER, blockBinding, bufferId);
-//  //delete data;
-//  //++mUniformBindingId;
-//}
-//
-//
-//const char* GlRenderer::ShaderTypeToString(int shaderType)
-//{
-//  switch(shaderType)
-//  {
-//  case GL_VERTEX_SHADER:
-//    return "Vertex";
-//  case GL_TESS_CONTROL_SHADER:
-//    return "Tessalation Control";
-//  case GL_TESS_EVALUATION_SHADER:
-//    return "Tessalation Evaluation";
-//  case GL_GEOMETRY_SHADER:
-//    return "Geometry";
-//  case GL_FRAGMENT_SHADER:
-//    return "Pixel";
-//  default:
-//    return "Unknown";
-//    break;
-//  }
-//}
-//
-//int GlRenderer::MeshTypeToGlMeshType(MeshElementType meshElementType)
-//{
-//  switch(meshElementType)
-//  {
-//  case Graphics::MeshElementType::Lines:
-//    return GL_LINES;
-//    break;
-//  case Graphics::MeshElementType::Triangles:
-//    return GL_TRIANGLES;
-//    break;
-//  default:
-//    return -1;
-//    break;
-//  }
-//}
-
+}//namespace Graphics

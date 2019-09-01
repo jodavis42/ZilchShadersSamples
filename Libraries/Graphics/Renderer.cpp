@@ -5,6 +5,9 @@
 
 #include "Renderer.hpp"
 
+namespace Graphics
+{
+
 TextureData::TextureData()
 {
   mTexture = nullptr;
@@ -16,3 +19,5 @@ TextureData::TextureData(Texture* texture, int textureSlot)
   mTexture = texture;
   mTextureSlot = textureSlot;
 }
+
+}//namespace Graphics

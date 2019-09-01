@@ -8,16 +8,7 @@
 #include "Common/CommonStandard.hpp"
 #include "String/String.hpp"
 #include "Zilch.hpp"
-#include "ZilchShadersStandard.hpp"
 
-using Math::Vector2;
-using Math::Vector3;
-using Math::Vector4;
-using Math::Matrix3;
-using Math::Matrix4;
-using Zero::String;
-using Zero::Array;
-using Zero::HashMap;
+#include "GraphicsStandard.hpp"
 
-using Zero::ZilchShaderIRType;
-using Zero::ZilchShaderIRBackend;
+using namespace Graphics;

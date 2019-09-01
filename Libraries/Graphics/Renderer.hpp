@@ -5,6 +5,9 @@
 
 #include "GraphicsStandard.hpp"
 
+namespace Graphics
+{
+
 class Mesh;
 class Texture;
 class Shader;
@@ -87,3 +90,4 @@ public:
   virtual ZilchShaderIRBackend* CreateBackend() abstract;
 };
 
+}//namespace Graphics

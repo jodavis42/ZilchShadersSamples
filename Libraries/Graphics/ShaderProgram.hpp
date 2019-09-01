@@ -5,6 +5,9 @@
 
 #include "GraphicsStandard.hpp"
 
+namespace Graphics
+{
+
 class Shader
 {
 public:
@@ -30,3 +33,4 @@ public:
   static Zero::ZilchShaderSpirVSettings* CreateZilchShaderSettings(Zero::SpirVNameSettings& nameSettings);
 };
 
+}//namespace Graphics

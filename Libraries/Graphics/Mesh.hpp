@@ -5,6 +5,9 @@
 
 #include "GraphicsStandard.hpp"
 
+namespace Graphics
+{
+
 struct MeshElementType
 {
   enum Enum
@@ -44,60 +47,5 @@ public:
   int mPatchSize;
   String mName;
 };
-//
-//class Mesh
-//{
-//public:
-//  Mesh() { mDynamic = false; mType = 0; }
-//  Mesh(const std::string& name, int type)
-//  {
-//    mName = name;
-//    mDynamic = false;
-//    mType = type;
-//  }
-//
-//  size_t TriangleCount() const
-//  {
-//    return mIndices.size() / 3;
-//  }
-//
-//  Triangle TriangleAt(size_t triangleIndex) const
-//  {
-//    Triangle tri;
-//    tri.mPoints[0] = mVertices[mIndices[triangleIndex * 3 + 0]].mPosition;
-//    tri.mPoints[1] = mVertices[mIndices[triangleIndex * 3 + 1]].mPosition;
-//    tri.mPoints[2] = mVertices[mIndices[triangleIndex * 3 + 2]].mPosition;
-//    return tri;
-//  }
-//
-//  std::vector<Vector3> GetVertexPositions()
-//  {
-//    std::vector<Vector3> vertices;
-//    for(size_t i = 0; i < mVertices.size(); ++i)
-//      vertices.push_back(mVertices[i].mPosition);
-//    return vertices;
-//  }
-//
-//  void Bind();
-//
-//  typedef std::vector<Vertex> Vertices;
-//  Vertices mVertices;
-//  typedef std::vector<size_t> Indices;
-//  Indices mIndices;
-//
-//  std::string mName;
-//  bool mDynamic;
-//  int mType;
-//  int mElementType;
-//  int mPatchSize;
-//  
-//  unsigned int mTriangleArray;
-//  unsigned int mTriangleVertex;
-//  unsigned int mTriangleIndex;
-//
-//  static int mPositionLocation;
-//  static int mNormalLocation;
-//  static int mUvLocation;
-//};
 
-
+}//namespace Graphics

@@ -5,6 +5,9 @@
 
 #include "GraphicsStandard.hpp"
 
+namespace Graphics
+{
+
 class Material
 {
 public:
@@ -12,4 +15,4 @@ public:
   String mMaterialName;
 };
 
-
+}//namespace Graphics

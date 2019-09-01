@@ -5,6 +5,9 @@
 
 #include "Texture.hpp"
 
+namespace Graphics
+{
+
 Texture::Texture()
 {
   mSizeX = mSizeY = 1;
@@ -15,3 +18,5 @@ Texture::Texture()
   mAddressingX = TextureAddressing::Repeat;
   mAddressingY = TextureAddressing::Repeat;
 }
+
+}//namespace Graphics

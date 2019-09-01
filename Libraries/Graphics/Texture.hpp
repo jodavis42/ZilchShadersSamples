@@ -5,6 +5,9 @@
 
 #include "GraphicsStandard.hpp"
 
+namespace Graphics
+{
+
 struct TextureFormat
 {
   enum Enum
@@ -59,3 +62,5 @@ public:
   TextureAddressing::Enum mAddressingY;
   Array<float> mTextureData;
 };
+
+}//namespace Graphics

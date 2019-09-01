@@ -13,6 +13,8 @@
 #include "Zilch.hpp"
 #include "ZilchShadersStandard.hpp"
 
+namespace Graphics
+{
 using Math::Vector2;
 using Math::Vector3;
 using Math::Vector4;
@@ -24,3 +26,4 @@ using Zero::HashMap;
 
 using Zero::ZilchShaderIRType;
 using Zero::ZilchShaderIRBackend;
+}//namespace Graphics

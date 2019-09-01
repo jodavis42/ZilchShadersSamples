@@ -1,5 +1,6 @@
 #pragma once
 
+#include "FrameworkStandard.hpp"
 #include "Renderer.hpp"
 #include "Mesh.hpp"
 #include "Texture.hpp"

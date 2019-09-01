@@ -8,6 +8,9 @@
 #include "Renderer.hpp"
 #include "Texture.hpp"
 
+namespace Graphics
+{
+
 class GlMeshData;
 class GlTextureData;
 class GlShaderData;
@@ -37,7 +40,7 @@ public:
   void ClearTarget() override;
   void Draw(ObjectData& objData) override;
   void Draw(RenderData& renderData) override;
-  
+
   void Reshape(int width, int height, float aspectRatio) override;
   Matrix4 BuildPerspectiveMatrix(float verticalFov, float aspectRatio, float nearDistance, float farDistance) override;
   ZilchShaderIRBackend* CreateBackend() override;
@@ -61,3 +64,4 @@ public:
   HashMap<UniformBuffer*, GlUniformBufferData*> mUniformBufferMap;
 };
 
+}//namespace Graphics
