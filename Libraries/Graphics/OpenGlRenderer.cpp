@@ -10,8 +10,8 @@
 
 #include "Mesh.hpp"
 #include "Texture.hpp"
-#include "ShaderProgram.hpp"
-#include "FrameworkZilchShaderGlslBackend.hpp"
+#include "Shader.hpp"
+#include "UniformBuffer.hpp"
 
 namespace Graphics
 {
@@ -333,15 +333,6 @@ void OpenGlRenderer::Draw(ObjectData& objData)
   }
 }
 
-void OpenGlRenderer::Draw(RenderData& renderData)
-{
-  for(size_t i = 0; i < renderData.mObjects.Size(); ++i)
-  {
-    ObjectData& objData = renderData.mObjects[i];
-    Draw(objData);
-  }
-}
-
 void OpenGlRenderer::Reshape(int width, int height, float aspectRatio)
 {
   glViewport(0, 0, width, height);
@@ -475,7 +466,7 @@ void OpenGlRenderer::BindBufferInternal(GlShaderData* glShader, UniformBuffer* b
 void OpenGlRenderer::UpdateBufferDataInternal(UniformBuffer* buffer, GlUniformBufferData* glBuffer)
 {
   glBindBuffer(GL_UNIFORM_BUFFER, glBuffer->mBufferId);
-  glBufferData(GL_UNIFORM_BUFFER, buffer->mData.Size(), buffer->mData.Data(), GL_DYNAMIC_DRAW);
+  glBufferData(GL_UNIFORM_BUFFER, buffer->mBufferData.Size(), buffer->mBufferData.Data(), GL_DYNAMIC_DRAW);
   glBindBuffer(GL_UNIFORM_BUFFER, 0);
 }
 

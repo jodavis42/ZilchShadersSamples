@@ -28,40 +28,11 @@ public:
 class ObjectData
 {
 public:
-  //ObjectData();
-
-  //void Load(Model* model);
-
-  Matrix4 mLocalToWorld;
   Mesh* mMesh;
   Shader* mShader;
   Array<UniformBuffer*> mPreBoundBuffers;
   Array<UniformBuffer*> mBuffersToBind;
   Array<TextureData> mTextures;
-};
-
-//-------------------------------------------------------------------CameraData
-class CameraData
-{
-public:
-//  CameraData();
-
-  Matrix4 mWorldToView;
-  Matrix4 mViewToPerspective;
-
-  //float mNearDistance;
-  //float mFarDistance;
-  //float mAspectRatio;
-  //float mFov;
-};
-
-//-------------------------------------------------------------------RenderData
-class RenderData
-{
-public:
-
-  Array<ObjectData> mObjects;
-  CameraData mCameraData;
 };
 
 //-------------------------------------------------------------------Renderer
@@ -87,7 +58,6 @@ public:
 
   virtual void ClearTarget() {};
   virtual void Draw(ObjectData& objData) {};
-  virtual void Draw(RenderData& renderData) {};
 
   virtual void Reshape(int width, int height, float aspectRatio) {};
   virtual Matrix4 BuildPerspectiveMatrix(float verticalFov, float aspectRatio, float nearDistance, float farDistance) abstract;

@@ -40,7 +40,6 @@ public:
 
   void ClearTarget() override;
   void Draw(ObjectData& objData) override;
-  void Draw(RenderData& renderData) override;
 
   void Reshape(int width, int height, float aspectRatio) override;
   Matrix4 BuildPerspectiveMatrix(float verticalFov, float aspectRatio, float nearDistance, float farDistance) override;

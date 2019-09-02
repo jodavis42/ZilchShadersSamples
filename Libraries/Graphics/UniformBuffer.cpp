@@ -3,16 +3,15 @@
 ///////////////////////////////////////////////////////////////////////////////
 #include "Precompiled.hpp"
 
-#include "Model.hpp"
+#include "UniformBuffer.hpp"
 
 namespace Graphics
 {
 
-//-------------------------------------------------------------------Model
-Model::Model()
+//-------------------------------------------------------------------UniformBuffer
+UniformBuffer::UniformBuffer()
 {
-  mMaterial = nullptr;
-  mMesh = nullptr;
+  mId = 0;
 }
 
 }//namespace Graphics

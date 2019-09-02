@@ -3,16 +3,10 @@
 ///////////////////////////////////////////////////////////////////////////////
 #include "Precompiled.hpp"
 
-#include "Model.hpp"
+#include "Shader.hpp"
 
 namespace Graphics
 {
 
-//-------------------------------------------------------------------Model
-Model::Model()
-{
-  mMaterial = nullptr;
-  mMesh = nullptr;
-}
 
 }//namespace Graphics

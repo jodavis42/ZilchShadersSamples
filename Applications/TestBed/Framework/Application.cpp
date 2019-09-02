@@ -5,22 +5,34 @@
 
 #include "ZilchShadersStandard.hpp"
 
-
+//-------------------------------------------------------------------Application
 Application::Application()
 {
   mRenderer = new OpenGlRenderer();
   mRenderer->Initialize();
+  mMeshLibrary = new MeshLibrary();
+  mMaterialLibrary = new MaterialLibrary();
+  mTextureLibrary = new TextureLibrary();
+  mShaderLibrary = new ShaderLibrary();
+  mZilchShaderManager = new ZilchShaderManager();
 
   mCamera = new Camera();
   mCamera->SetCameraMode(Camera::Fps);
   mCamera->mTranslation = Vector3(0, 0, 5);
   mCamera->mPhi = Math::cPi / 2.0f;
   mCamera->mTheta = -Math::cPi / 2.0f;
-  mFrameTime = 0;
+  
+  mFrameData.mLogicTime = 0;
+  mFrameData.mFrameTime = 0;
 }
 
 Application::~Application()
 {
+  delete mZilchShaderManager;
+  delete mShaderLibrary;
+  delete mTextureLibrary;
+  delete mMaterialLibrary;
+  delete mMeshLibrary;
   delete mCamera;
   delete mRenderer;
 
@@ -38,14 +50,37 @@ void Application::Initialize()
   Zero::ShaderSettingsLibrary::InitializeInstance();
   Zero::ShaderSettingsLibrary::GetInstance().GetLibrary();
 
-  InitializeShaders();
-  InitializeTextures();
   InitializeMeshes();
+  InitializeTextures();
+  InitializeShadersAndMaterials();
 
-  mBuffer = new UniformBuffer();
-  mBuffer->mBufferName = "Shader_PixelFrame_Data";
-  mBuffer->mData.Resize(8);
-  mRenderer->CreateBuffer(mBuffer);
+  mFrameDataBuffer = new UniformBuffer();
+  mFrameDataBuffer->mBufferName = "FrameData";
+  mFrameDataBuffer->mBufferData.Set(mFrameData);
+  mFrameDataBuffer->mId = 0;
+  mRenderer->CreateBuffer(mFrameDataBuffer);
+
+  mCameraDataBuffer = new UniformBuffer();
+  mCameraDataBuffer->mBufferName = "CameraData";
+  mCameraDataBuffer->mId = 1;
+  mCameraDataBuffer->mBufferData.Set(mCameraData);
+  mRenderer->CreateBuffer(mCameraDataBuffer);
+
+  Model* model = new Model();
+  model->mScale = Vector3(2);
+  model->mRotation = Matrix3::cIdentity;
+  model->mTranslation = Vector3(1, 0, 0);
+  model->mMaterial = mMaterialLibrary->Find("Shader");
+  model->mMesh = mMeshLibrary->GetDefault();
+  mModels.PushBack(model);
+
+  model = new Model();
+  model->mScale = Vector3(1);
+  model->mRotation = Matrix3::cIdentity;
+  model->mTranslation = Vector3(-2, 0, 0);
+  model->mMaterial = mMaterialLibrary->Find("Shader");
+  model->mMesh = mMeshLibrary->GetDefault();
+  mModels.PushBack(model);
 }
 
 void  Application::InitializeMeshes()
@@ -69,7 +104,7 @@ void  Application::InitializeMeshes()
 
   mRenderer->CreateMesh(mesh);
 
-  mMeshes.PushBack(mesh);
+  mMeshLibrary->Add(mesh->mName, mesh);
 }
 
 void Application::InitializeTextures()
@@ -77,6 +112,7 @@ void Application::InitializeTextures()
   Texture* texture = new Texture();
   texture->mSizeX = 16;
   texture->mSizeY = 16;
+  texture->mName = "Texture";
   const int size = texture->mSizeX *  texture->mSizeY * 3;
 
   texture->mTextureData.Resize(size);
@@ -93,74 +129,12 @@ void Application::InitializeTextures()
     }
   }
   mRenderer->CreateTexture(texture);
-  // Clear data (not needed since it's uploaded)
+  // Clear data (not needed since it's uploaded to the renderer now)
   texture->mTextureData.Clear();
-  mTextures.PushBack(texture);
+  mTextureLibrary->Add(texture->mName, texture);
 }
 
-typedef Zilch::Ref<Zero::ShaderTranslationPassResult> TranslationPassResultRef;
-
-void CreateShader(Zero::SimpleZilchShaderIRGenerator& generator, Zero::ShaderPipelineDescription& pipeline, Material& material, Shader& shader, TranslationPassResultRef& passResult)
-{
-  Zero::ZilchShaderIRCompositor::ShaderDefinition shaderDef;
-  shaderDef.mShaderName = material.mMaterialName;
-  for(size_t i = 0; i < material.mFragmentNames.Size(); ++i)
-  {
-    Zero::ZilchShaderIRType* shaderType = generator.FindFragmentType(material.mFragmentNames[i]);
-    shaderDef.mFragments.PushBack(shaderType);
-  }
-
-  Zero::ShaderCapabilities capabilities;
-  generator.ComposeShader(shaderDef, capabilities);
-
-  // Add all of the composited shader stages together into the shader library.
-  for(size_t i = 0; i < Zero::FragmentType::Size; ++i)
-  {
-    Zero::ZilchShaderIRCompositor::ShaderStageDescription& shaderInfo = shaderDef.mResults[i];
-    if(shaderInfo.mShaderCode.Empty())
-      continue;
-
-    generator.AddShaderCode(shaderInfo.mShaderCode, shaderInfo.mClassName, nullptr);
-  }
-  generator.CompileAndTranslateShaders();
-  generator.CompilePipeline(pipeline);
-
-  
-  
-  for(size_t i = 0; i < Zero::FragmentType::Size; ++i)
-  {
-    Zero::ZilchShaderIRCompositor::ShaderStageDescription& shaderInfo = shaderDef.mResults[i];
-    if(shaderInfo.mShaderCode.Empty())
-      continue;
-  
-    Zero::ZilchShaderIRType* shaderType = generator.FindShaderType(shaderDef.mResults[i].mClassName);
-    Zero::ShaderTranslationPassResult* passResult = generator.FindTranslationResult(shaderType);
-    auto* reflection = generator.FindSimplifiedReflectionResult(shaderType);
-    Array<TranslationPassResultRef> pipelineResults, debugResults;
-    generator.CompilePipeline(shaderType, pipeline, pipelineResults, debugResults);
-    String debug = debugResults[0]->ToString();
-  
-    passResult = pipelineResults.Back();
-  
-    shader.mShaderSource[i] = passResult->ToString();
-
-    for(size_t i = 0; i < reflection->mReflection.mUniforms.Size(); ++i)
-    {
-      Zero::ShaderStageResource& uniformData = passResult->mReflectionData.mUniforms[i];
-      UniformBuffer buffer;
-      buffer.mData.Resize(uniformData.mReflectionData.mSizeInBytes);
-
-
-    }
-
-
-  }
-
-  //Zero::SimplifiedShaderReflectionData reflectionData;
-  //reflectionData.CreateReflectionData(generator.mShaderLibraryRef, )
-}
-
-void  Application::InitializeShaders()
+void Application::InitializeShadersAndMaterials()
 {
   Zilch::JsonReader jsonReader;
   Zilch::CompilationErrors errors;
@@ -168,48 +142,23 @@ void  Application::InitializeShaders()
   String shadersCoreDir = json->GetMember("ShaderCoreDir")->AsString();
   String testShadersDir = json->GetMember("TestShadersDir")->AsString();
 
+  mZilchShaderManager->Initialize(mTextureLibrary, mMaterialLibrary, mShaderLibrary, mRenderer->CreateBackend(), shadersCoreDir);
   
+  mZilchShaderManager->AddShaderFragmentProjectDirectory(testShadersDir);
 
-  Zero::SpirVNameSettings nameSettings;
-  SampleZilchShaderIRGenerator::LoadNameSettings(nameSettings);
-  Zero::ZilchShaderSpirVSettings* settings = SampleZilchShaderIRGenerator::CreateZilchShaderSettings(nameSettings);
-  SampleZilchShaderIRGenerator generator(settings);
-  Zero::ShaderPipelineDescription pipeline;
-  pipeline.mDebugPasses.PushBack(new Zero::ZilchSpirVDisassemblerBackend());
-  //pipeline.mToolPasses.PushBack(new Zero::SpirVOptimizerPass());
-  pipeline.mBackend = mRenderer->CreateBackend();
-
-  generator.SetupDependencies(shadersCoreDir);
-  generator.RecursivelyLoadDirectory(testShadersDir, generator.mFragmentProject);
-  generator.CompileAndTranslateFragments();
-
-  Material simpleMat;
+  MaterialCreationData simpleMat;
   simpleMat.mMaterialName = "Shader";
   simpleMat.mFragmentNames.PushBack("Vertex");
   simpleMat.mFragmentNames.PushBack("Pixel");
+  mZilchShaderManager->AddMaterialDefinition(simpleMat);
 
-  Shader* shader = new Shader();
-  TranslationPassResultRef passResult;
-  CreateShader(generator, pipeline, simpleMat, *shader, passResult);
-
-  //for(size_t i = 0; i < passResult->mReflectionData.mUniforms.Size(); ++i)
-  //{
-  //  Zero::ShaderStageResource& uniformData = passResult->mReflectionData.mUniforms[i];
-  //  UniformBuffer buffer;
-  //  buffer.mData.Resize(uniformData.mReflectionData.mSizeInBytes);
-  //
-  //
-  //}
-  
-
-  mRenderer->CreateShader(shader);
-
-  mShaders.PushBack(shader);
+  mZilchShaderManager->CreateShadersAndMaterials(mRenderer);
 }
 
 void Application::Update(float frameTime)
 {
-  mFrameTime += frameTime;
+  mFrameData.mFrameTime += frameTime;
+  mFrameData.mLogicTime += frameTime;
 }
 
 void Application::Reshape(int width, int height, float aspectRatio)
@@ -220,51 +169,162 @@ void Application::Reshape(int width, int height, float aspectRatio)
 
 void Application::Draw()
 {
-  memcpy(mBuffer->mData.Data(), &mFrameTime, sizeof(mFrameTime));
-  memcpy(mBuffer->mData.Data() + sizeof(mFrameTime), &mFrameTime, sizeof(mFrameTime));
-  mBuffer->mId = 0;
-  mRenderer->UpdateBufferData(mBuffer);
+  mCamera->SetMatrix();
+
+  mFrameDataBuffer->mBufferData.Set(mFrameData);
+  mRenderer->UpdateBufferData(mFrameDataBuffer);
 
   float nearDistance = 0.1f;
   float farDistance = 1000.0f;
   float fov = Math::DegToRad(45);
-  CameraData cameraData;
-  cameraData.mViewToPerspective = mRenderer->BuildPerspectiveMatrix(fov, mCamera->mAspectRatio, nearDistance, farDistance);
-  //renderData.mCameraData.mWorldToView.BuildTransform(Vector3(0, 0, -5), Matrix3::cIdentity, Vector3(1, 1, 1));
-  mCamera->SetMatrix();
-  cameraData.mWorldToView = mCamera->mWorldToView;
-
-  ObjectData objData;
-  objData.mMesh = mMeshes[0];
-  objData.mLocalToWorld = Matrix4::GenerateTransform(Vector3(1, 0, 0), Matrix3::cIdentity, Vector3(2));
-
-  UniformBuffer transformBuffer;
-  transformBuffer.mId = 2;
-  transformBuffer.mBufferName = "Shader_VertexTransformData";
-  transformBuffer.mData.Resize(256);
-
-  TextureData textureData;
-  textureData.mTexture = mTextures[0];
-  textureData.mTextureSlot = 0;
-
-  Matrix4 viewToPerspective = cameraData.mViewToPerspective;
-  Matrix4 worldToView = cameraData.mWorldToView.Transposed();
-  Matrix4 localToWorld = objData.mLocalToWorld;
-  memcpy(transformBuffer.mData.Data(), localToWorld.array, 64);
-  memcpy(transformBuffer.mData.Data() + 64, worldToView.array, 64);
-  memcpy(transformBuffer.mData.Data() + 128, viewToPerspective.array, 64);
+  mCameraData.mFarPlane = farDistance;
+  mCameraData.mNearPlane = nearDistance;
   
-  objData.mShader = mShaders[0];
-  objData.mPreBoundBuffers.PushBack(mBuffer);
-  objData.mBuffersToBind.PushBack(&transformBuffer);
-  objData.mTextures.PushBack(textureData);
+  TransformBufferData transformData;
+  transformData.mViewToPerspective = mRenderer->BuildPerspectiveMatrix(fov, mCamera->mAspectRatio, nearDistance, farDistance);
+  transformData.mWorldToView = mCamera->mWorldToView.Transposed();
 
-  RenderData renderData;
-  renderData.mObjects.PushBack(objData);
-  renderData.mCameraData = cameraData;
+  UniformBuffer materialBuffers[Zero::FragmentType::Size];
 
   mRenderer->ClearTarget();
-  mRenderer->Draw(renderData);
+  for(size_t modelIndex = 0; modelIndex < mModels.Size(); ++modelIndex)
+  {
+    Model* model = mModels[modelIndex];
+    Draw(model, transformData);
+    //Material* material = model->mMaterial;
+    //
+    //ObjectData objData;
+    //objData.mMesh = model->mMesh;
+    //transformData.mLocalToWorld = Matrix4::GenerateTransform(model->mTranslation, model->mRotation, model->mScale);
+    //
+    //UniformBuffer transformBuffer;
+    //transformBuffer.mId = 2;
+    //transformBuffer.mBufferData.Set(transformData);
+    //
+    //for(size_t fragIndex = 0; fragIndex < Zero::FragmentType::Size; ++fragIndex)
+    //{
+    //  UniformBuffer& materialBuffer = materialBuffers[fragIndex];
+    //  materialBuffer.mId = material->mMaterialStageBindingData[fragIndex].mReflectionData.mBinding;// mZilchShaderManager->mGenerator->mSettings->mDefaultUniformBufferDescription.mBindingId + fragIndex;
+    //  materialBuffer.mBufferData.Resize(material->mMaterialStageBindingData[fragIndex].mReflectionData.mSizeInBytes);
+    //}
+    //
+    //for(size_t blockIndex = 0; blockIndex < material->mMaterialBlocks.Size(); ++blockIndex)
+    //{
+    //  MaterialBlock* block = material->mMaterialBlocks[blockIndex];
+    //  for(size_t propIndex = 0; propIndex < block->mPropertyList.Size(); ++propIndex)
+    //  {
+    //    MaterialProperty* materialProp = block->mPropertyList[propIndex];
+    //    if(materialProp->mValidReflectionObject == false)
+    //      continue;
+    //
+    //    if(materialProp->mShaderType->mBaseType == Zero::ShaderIRTypeBaseType::SampledImage)
+    //    {
+    //      MaterialTextureProperty* textureProp = (MaterialTextureProperty*)materialProp;
+    //      Texture* texture = mTextureLibrary->Find(textureProp->mTextureName);
+    //      for(size_t bindingIndex = 0; bindingIndex < textureProp->mBindingData.Size(); ++bindingIndex)
+    //      {
+    //        ShaderPropertyBindingData& bindingData = textureProp->mBindingData[bindingIndex];
+    //
+    //        TextureData textureData;
+    //        textureData.mTexture = texture;
+    //        textureData.mTextureSlot = bindingData.mReflectionData.mBinding;
+    //        objData.mTextures.PushBack(textureData);
+    //      }
+    //    }
+    //    else
+    //    {
+    //      MaterialDataProperty* dataProp = (MaterialDataProperty*)materialProp;
+    //      Zero::ShaderResourceReflectionData& reflectionData = dataProp->mBindingData.mReflectionData;
+    //
+    //      UniformBuffer& materialBuffer = materialBuffers[dataProp->mFragmentType];
+    //      memcpy(materialBuffer.mBufferData.Data() + reflectionData.mOffsetInBytes, dataProp->mPropertyData.Data(), reflectionData.mSizeInBytes);
+    //    }
+    //  }
+    //}
+    //
+    //objData.mShader = material->mShader;
+    //objData.mPreBoundBuffers.PushBack(mFrameDataBuffer);
+    //objData.mPreBoundBuffers.PushBack(mCameraDataBuffer);
+    //objData.mBuffersToBind.PushBack(&transformBuffer);
+    //for(size_t fragIndex = 0; fragIndex < Zero::FragmentType::Size; ++fragIndex)
+    //  objData.mBuffersToBind.PushBack(&materialBuffers[fragIndex]);
+    //
+    //mRenderer->Draw(objData);
+  }
+}
+
+void Application::Draw(Model* model, TransformBufferData& transformData)
+{
+  Material* material = model->mMaterial;
+  ObjectData objData;
+
+  transformData.mLocalToWorld = Matrix4::GenerateTransform(model->mTranslation, model->mRotation, model->mScale);
+  UniformBuffer transformBuffer;
+  transformBuffer.mId = 2;
+  transformBuffer.mBufferData.Set(transformData);
+
+  /// Extract all of the uniform buffers from the material for this object
+  UniformBuffer materialBuffers[Zero::FragmentType::Size];
+
+  // First, get the buffer id's and sizes for each shader stage
+  for(size_t fragIndex = 0; fragIndex < Zero::FragmentType::Size; ++fragIndex)
+  {
+    UniformBuffer& materialBuffer = materialBuffers[fragIndex];
+    Zero::ShaderResourceReflectionData& stageReflectionData = material->mMaterialStageBindingData[fragIndex].mReflectionData;
+    materialBuffer.mId = stageReflectionData.mBinding;
+    materialBuffer.mBufferData.Resize(stageReflectionData.mSizeInBytes);
+  }
+
+  // Then for each material block, copy each property to the uniform buffer in the right locations
+  for(size_t blockIndex = 0; blockIndex < material->mMaterialBlocks.Size(); ++blockIndex)
+  {
+    MaterialBlock* block = material->mMaterialBlocks[blockIndex];
+    for(size_t propIndex = 0; propIndex < block->mPropertyList.Size(); ++propIndex)
+    {
+      MaterialProperty* materialProp = block->mPropertyList[propIndex];
+      // If this property isn't actually a shader property for this material (fulfilled by another input) then skip it.
+      if(materialProp->mValidReflectionObject == false)
+        continue;
+
+      // Handle images/samplers specially
+      if(materialProp->mShaderType->mBaseType == Zero::ShaderIRTypeBaseType::SampledImage)
+      {
+        MaterialTextureProperty* textureProp = (MaterialTextureProperty*)materialProp;
+        Texture* texture = mTextureLibrary->Find(textureProp->mTextureName);
+        // Bind each texture id that was used
+        for(size_t bindingIndex = 0; bindingIndex < textureProp->mBindingData.Size(); ++bindingIndex)
+        {
+          ShaderPropertyBindingData& bindingData = textureProp->mBindingData[bindingIndex];
+
+          TextureData textureData;
+          textureData.mTexture = texture;
+          textureData.mTextureSlot = bindingData.mReflectionData.mBinding;
+          objData.mTextures.PushBack(textureData);
+        }
+      }
+      // Otherwise this is generic data, copy it to the relevant uniform buffer location
+      else
+      {
+        MaterialDataProperty* dataProp = (MaterialDataProperty*)materialProp;
+        Zero::ShaderResourceReflectionData& reflectionData = dataProp->mBindingData.mReflectionData;
+        
+        UniformBuffer& materialBuffer = materialBuffers[dataProp->mFragmentType];
+        WriteProperty(materialBuffer.mBufferData, dataProp, dataProp->mBindingData);
+        //memcpy(materialBuffer.mBufferData.Data() + reflectionData.mOffsetInBytes, dataProp->mPropertyData.Data(), reflectionData.mSizeInBytes);
+      }
+    }
+  }
+
+  objData.mMesh = model->mMesh;
+  objData.mShader = material->mShader;
+  // Record all the buffers and textures to render with
+  objData.mPreBoundBuffers.PushBack(mFrameDataBuffer);
+  objData.mPreBoundBuffers.PushBack(mCameraDataBuffer);
+  objData.mBuffersToBind.PushBack(&transformBuffer);
+  for(size_t fragIndex = 0; fragIndex < Zero::FragmentType::Size; ++fragIndex)
+    objData.mBuffersToBind.PushBack(&materialBuffers[fragIndex]);
+
+  mRenderer->Draw(objData);
 }
 
 void Application::OnKeyDown(unsigned int key)

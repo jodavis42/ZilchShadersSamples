@@ -5,9 +5,14 @@
 #include "Mesh.hpp"
 #include "Texture.hpp"
 #include "Camera.hpp"
-#include "ShaderProgram.hpp"
+#include "Shader.hpp"
+#include "UniformBuffer.hpp"
 #include "Material.hpp"
+#include "Model.hpp"
+#include "ZilchShaderManager.hpp"
+#include "AppBuiltInTypes.hpp"
 
+//-------------------------------------------------------------------Application
 class Application
 {
 public:
@@ -17,13 +22,14 @@ public:
   void Initialize();
   void InitializeMeshes();
   void InitializeTextures();
-  void InitializeShaders();
+  void InitializeShadersAndMaterials();
 
   void Update(float frameTime);
   // Reshape our projection matrix since the window size changed
   void Reshape(int width, int height, float aspectRatio);
 
   void Draw();
+  void Draw(Model* model, TransformBufferData& transformData);
 
   void OnKeyDown(unsigned int key);
   void OnKeyUp(unsigned int key);
@@ -31,11 +37,17 @@ public:
   void OnMouseMove(int x, int y);
   void OnMouseScroll(int x, int y);
 
+  FrameBufferData mFrameData;
+  CameraBufferData mCameraData;
+  UniformBuffer* mFrameDataBuffer;
+  UniformBuffer* mCameraDataBuffer;
+
   Renderer* mRenderer;
   Camera* mCamera;
-  Array<Mesh*> mMeshes;
-  Array<Texture*> mTextures;
-  Array<Shader*> mShaders;
-  UniformBuffer* mBuffer;
-  float mFrameTime;
+  MeshLibrary* mMeshLibrary;
+  MaterialLibrary* mMaterialLibrary;
+  TextureLibrary* mTextureLibrary;
+  ShaderLibrary* mShaderLibrary;
+  ZilchShaderManager* mZilchShaderManager;
+  Array<Model*> mModels;
 };
