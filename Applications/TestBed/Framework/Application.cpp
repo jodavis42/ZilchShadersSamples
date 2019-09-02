@@ -191,65 +191,6 @@ void Application::Draw()
   {
     Model* model = mModels[modelIndex];
     Draw(model, transformData);
-    //Material* material = model->mMaterial;
-    //
-    //ObjectData objData;
-    //objData.mMesh = model->mMesh;
-    //transformData.mLocalToWorld = Matrix4::GenerateTransform(model->mTranslation, model->mRotation, model->mScale);
-    //
-    //UniformBuffer transformBuffer;
-    //transformBuffer.mId = 2;
-    //transformBuffer.mBufferData.Set(transformData);
-    //
-    //for(size_t fragIndex = 0; fragIndex < Zero::FragmentType::Size; ++fragIndex)
-    //{
-    //  UniformBuffer& materialBuffer = materialBuffers[fragIndex];
-    //  materialBuffer.mId = material->mMaterialStageBindingData[fragIndex].mReflectionData.mBinding;// mZilchShaderManager->mGenerator->mSettings->mDefaultUniformBufferDescription.mBindingId + fragIndex;
-    //  materialBuffer.mBufferData.Resize(material->mMaterialStageBindingData[fragIndex].mReflectionData.mSizeInBytes);
-    //}
-    //
-    //for(size_t blockIndex = 0; blockIndex < material->mMaterialBlocks.Size(); ++blockIndex)
-    //{
-    //  MaterialBlock* block = material->mMaterialBlocks[blockIndex];
-    //  for(size_t propIndex = 0; propIndex < block->mPropertyList.Size(); ++propIndex)
-    //  {
-    //    MaterialProperty* materialProp = block->mPropertyList[propIndex];
-    //    if(materialProp->mValidReflectionObject == false)
-    //      continue;
-    //
-    //    if(materialProp->mShaderType->mBaseType == Zero::ShaderIRTypeBaseType::SampledImage)
-    //    {
-    //      MaterialTextureProperty* textureProp = (MaterialTextureProperty*)materialProp;
-    //      Texture* texture = mTextureLibrary->Find(textureProp->mTextureName);
-    //      for(size_t bindingIndex = 0; bindingIndex < textureProp->mBindingData.Size(); ++bindingIndex)
-    //      {
-    //        ShaderPropertyBindingData& bindingData = textureProp->mBindingData[bindingIndex];
-    //
-    //        TextureData textureData;
-    //        textureData.mTexture = texture;
-    //        textureData.mTextureSlot = bindingData.mReflectionData.mBinding;
-    //        objData.mTextures.PushBack(textureData);
-    //      }
-    //    }
-    //    else
-    //    {
-    //      MaterialDataProperty* dataProp = (MaterialDataProperty*)materialProp;
-    //      Zero::ShaderResourceReflectionData& reflectionData = dataProp->mBindingData.mReflectionData;
-    //
-    //      UniformBuffer& materialBuffer = materialBuffers[dataProp->mFragmentType];
-    //      memcpy(materialBuffer.mBufferData.Data() + reflectionData.mOffsetInBytes, dataProp->mPropertyData.Data(), reflectionData.mSizeInBytes);
-    //    }
-    //  }
-    //}
-    //
-    //objData.mShader = material->mShader;
-    //objData.mPreBoundBuffers.PushBack(mFrameDataBuffer);
-    //objData.mPreBoundBuffers.PushBack(mCameraDataBuffer);
-    //objData.mBuffersToBind.PushBack(&transformBuffer);
-    //for(size_t fragIndex = 0; fragIndex < Zero::FragmentType::Size; ++fragIndex)
-    //  objData.mBuffersToBind.PushBack(&materialBuffers[fragIndex]);
-    //
-    //mRenderer->Draw(objData);
   }
 }
 
