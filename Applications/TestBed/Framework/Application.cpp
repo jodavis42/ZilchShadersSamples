@@ -2,6 +2,7 @@
 
 #include "OpenGlRenderer.hpp"
 #include "Camera.hpp"
+#include "MaterialUniformBufferHelper.hpp"
 
 #include "ZilchShadersStandard.hpp"
 
@@ -204,57 +205,8 @@ void Application::Draw(Model* model, TransformBufferData& transformData)
   transformBuffer.mId = 2;
   transformBuffer.mBufferData.Set(transformData);
 
-  /// Extract all of the uniform buffers from the material for this object
-  UniformBuffer materialBuffers[Zero::FragmentType::Size];
-
-  // First, get the buffer id's and sizes for each shader stage
-  for(size_t fragIndex = 0; fragIndex < Zero::FragmentType::Size; ++fragIndex)
-  {
-    UniformBuffer& materialBuffer = materialBuffers[fragIndex];
-    Zero::ShaderResourceReflectionData& stageReflectionData = material->mMaterialStageBindingData[fragIndex].mReflectionData;
-    materialBuffer.mId = stageReflectionData.mBinding;
-    materialBuffer.mBufferData.Resize(stageReflectionData.mSizeInBytes);
-  }
-
-  // Then for each material block, copy each property to the uniform buffer in the right locations
-  for(size_t blockIndex = 0; blockIndex < material->mMaterialBlocks.Size(); ++blockIndex)
-  {
-    MaterialBlock* block = material->mMaterialBlocks[blockIndex];
-    for(size_t propIndex = 0; propIndex < block->mPropertyList.Size(); ++propIndex)
-    {
-      MaterialProperty* materialProp = block->mPropertyList[propIndex];
-      // If this property isn't actually a shader property for this material (fulfilled by another input) then skip it.
-      if(materialProp->mValidReflectionObject == false)
-        continue;
-
-      // Handle images/samplers specially
-      if(materialProp->mShaderType->mBaseType == Zero::ShaderIRTypeBaseType::SampledImage)
-      {
-        MaterialTextureProperty* textureProp = (MaterialTextureProperty*)materialProp;
-        Texture* texture = mTextureLibrary->Find(textureProp->mTextureName);
-        // Bind each texture id that was used
-        for(size_t bindingIndex = 0; bindingIndex < textureProp->mBindingData.Size(); ++bindingIndex)
-        {
-          ShaderPropertyBindingData& bindingData = textureProp->mBindingData[bindingIndex];
-
-          TextureData textureData;
-          textureData.mTexture = texture;
-          textureData.mTextureSlot = bindingData.mReflectionData.mBinding;
-          objData.mTextures.PushBack(textureData);
-        }
-      }
-      // Otherwise this is generic data, copy it to the relevant uniform buffer location
-      else
-      {
-        MaterialDataProperty* dataProp = (MaterialDataProperty*)materialProp;
-        Zero::ShaderResourceReflectionData& reflectionData = dataProp->mBindingData.mReflectionData;
-        
-        UniformBuffer& materialBuffer = materialBuffers[dataProp->mFragmentType];
-        WriteProperty(materialBuffer.mBufferData, dataProp, dataProp->mBindingData);
-        //memcpy(materialBuffer.mBufferData.Data() + reflectionData.mOffsetInBytes, dataProp->mPropertyData.Data(), reflectionData.mSizeInBytes);
-      }
-    }
-  }
+  MaterialRendererData materialData;
+  ExtractMaterialData(model, mTextureLibrary, materialData);
 
   objData.mMesh = model->mMesh;
   objData.mShader = material->mShader;
@@ -263,7 +215,8 @@ void Application::Draw(Model* model, TransformBufferData& transformData)
   objData.mPreBoundBuffers.PushBack(mCameraDataBuffer);
   objData.mBuffersToBind.PushBack(&transformBuffer);
   for(size_t fragIndex = 0; fragIndex < Zero::FragmentType::Size; ++fragIndex)
-    objData.mBuffersToBind.PushBack(&materialBuffers[fragIndex]);
+    objData.mBuffersToBind.PushBack(&materialData.mMaterialBuffers[fragIndex]);
+  objData.mTextures = materialData.mTextures;
 
   mRenderer->Draw(objData);
 }
