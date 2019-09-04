@@ -24,6 +24,7 @@ target_link_libraries(Framework
                       OpenGL
                       Glew32
                       Graphics
+                      OpenGLApi
 )
 
 #find_library(SDL2_DLL SDL2.dll PATHS ../../../)

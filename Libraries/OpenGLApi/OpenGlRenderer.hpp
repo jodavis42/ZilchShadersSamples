@@ -3,7 +3,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 #pragma once
 
-#include "GraphicsStandard.hpp"
+#include "OpenGlStandard.hpp"
 
 #include "Renderer.hpp"
 #include "Texture.hpp"
