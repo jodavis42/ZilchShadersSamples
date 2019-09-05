@@ -1,6 +1,7 @@
 #pragma once
 
 class SdlApp;
+typedef union SDL_Event SDL_Event;
 
 #include "Material.hpp"
 #include "Texture.hpp"
@@ -21,6 +22,7 @@ public:
   bool Init(SdlApp* sdlApp);
   void Shutdown();
 
+  void ProcessEvent(SDL_Event& event);
   void NewFrame();
   void EndFrame();
   void Render();

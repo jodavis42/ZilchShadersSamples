@@ -149,10 +149,9 @@ void Application::InitializeTextures()
       for(int x = 0; x < texture->mSizeX; ++x)
       {
         int index = (x + y * texture->mSizeX) * 3;
-        float value = (x / (float)texture->mSizeX) * (y / (float)texture->mSizeY);
-        texture->mTextureData[index + 0] = value;
-        texture->mTextureData[index + 1] = value;
-        texture->mTextureData[index + 2] = value;
+        texture->mTextureData[index + 0] = (x / (float)texture->mSizeX);
+        texture->mTextureData[index + 1] = (y / (float)texture->mSizeY);
+        texture->mTextureData[index + 2] = 0;
       }
     }
     mRenderer->CreateTexture(texture);

@@ -38,6 +38,11 @@ void ImGuiHelper::Shutdown()
   ImGui::DestroyContext();
 }
 
+void ImGuiHelper::ProcessEvent(SDL_Event& event)
+{
+  ImGui_ImplSDL2_ProcessEvent(&event);
+}
+
 void ImGuiHelper::NewFrame()
 {
   ImGui_ImplOpenGL3_NewFrame();
@@ -58,8 +63,8 @@ void ImGuiHelper::Render()
 
 void ImGuiHelper::DrawMaterials(MaterialLibrary* materialLibrary)
 {
-  bool p_open;
-  ImGui::ShowDemoWindow(&p_open);
+  //bool p_open;
+  //ImGui::ShowDemoWindow(&p_open);
 
   bool open;
   ImGui::SetNextWindowSize(ImVec2(430, 450), ImGuiCond_FirstUseEver);

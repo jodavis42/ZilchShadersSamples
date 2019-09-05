@@ -88,6 +88,7 @@ void MainLoop(SDL_Window* window, Application* application)
       //if(handled)
       //  continue;
 
+      application->mImGui->ProcessEvent(event);
       switch(event.type)
       {
       case SDL_QUIT:
