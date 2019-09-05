@@ -53,7 +53,7 @@ struct TextureAddressing
 };
 
 //-------------------------------------------------------------------Texture
-class Texture
+class Texture : public Resource
 {
 public:
   Texture();

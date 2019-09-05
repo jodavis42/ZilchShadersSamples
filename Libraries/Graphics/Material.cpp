@@ -10,35 +10,6 @@ namespace Graphics
 {
 
 //-------------------------------------------------------------------MaterialBlock
-MaterialProperty::MaterialProperty()
-{
-  mFragmentType = Zero::FragmentType::None;
-  mValidReflectionObject = false;
-}
-
-MaterialProperty* MaterialDataProperty::Clone() const
-{
-  MaterialDataProperty* result = new MaterialDataProperty();
-  result->mShaderType = mShaderType;
-  result->mPropertyName = mPropertyName;
-  result->mValidReflectionObject = mValidReflectionObject;;
-  result->mBindingData = mBindingData;
-  result->mPropertyData.CopyFrom(mPropertyData);
-  return result;
-}
-
-MaterialProperty* MaterialTextureProperty::Clone() const
-{
-  MaterialTextureProperty* result = new MaterialTextureProperty();
-  result->mShaderType = mShaderType;
-  result->mPropertyName = mPropertyName;
-  result->mValidReflectionObject = mValidReflectionObject;;
-  result->mBindingData = mBindingData;
-  result->mTextureName = mTextureName;
-  return result;
-}
-
-//-------------------------------------------------------------------MaterialBlock
 MaterialBlock::~MaterialBlock()
 {
   Destroy();

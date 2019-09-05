@@ -10,7 +10,7 @@ namespace Graphics
 {
 
 //-------------------------------------------------------------------Shader
-class Shader
+class Shader : public Resource
 {
 public:
   String mName;

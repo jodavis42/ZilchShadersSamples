@@ -46,7 +46,7 @@ void ExtractMaterialData(Model* model, TextureLibrary* textureLibrary, MaterialR
       if(materialProp->mShaderType->mBaseType == Zero::ShaderIRTypeBaseType::SampledImage)
       {
         MaterialTextureProperty* textureProp = (MaterialTextureProperty*)materialProp;
-        Texture* texture = textureLibrary->Find(textureProp->mTextureName);
+        Texture* texture = textureLibrary->Find(textureProp->mResourceName);
         // Bind each texture id that was used
         for(size_t bindingIndex = 0; bindingIndex < textureProp->mBindingData.Size(); ++bindingIndex)
         {

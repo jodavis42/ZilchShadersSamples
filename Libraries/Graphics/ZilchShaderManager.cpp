@@ -84,7 +84,7 @@ void ZilchShaderManager::CreateShadersAndMaterials(Renderer* renderer)
 
 void ZilchShaderManager::ClearShadersAndMaterials(Renderer* renderer)
 {
-  for(auto range = mShaderLibrary->mResourceMap.Values(); !range.Empty(); range.PopFront())
+  for(auto range = mShaderLibrary->Values(); !range.Empty(); range.PopFront())
   {
     renderer->DestroyShader(range.Front());
   }
@@ -103,7 +103,7 @@ void ZilchShaderManager::CreateShaders(Renderer* renderer)
   CreateShaderLibrary();
   ExtractShaders();
 
-  for(auto range = mShaderLibrary->mResourceMap.Values(); !range.Empty(); range.PopFront())
+  for(auto range = mShaderLibrary->Values(); !range.Empty(); range.PopFront())
   {
     renderer->CreateShader(range.Front());
   }
@@ -238,7 +238,8 @@ void ZilchShaderManager::CreateMaterialBlockTemplate(MaterialBlock* block, Zilch
     {
       MaterialTextureProperty* textureProp = new MaterialTextureProperty();
       // @JoshD: No good way to set texture defaults now (can't do it by string, have to inject types into zilch).
-      textureProp->mTextureName = mTextureLibrary->GetDefault()->mName;
+      textureProp->mResourceName = mTextureLibrary->GetDefault()->mName;
+      textureProp->mLibrary = mTextureLibrary;
       materialProp = textureProp;
     }
     else

@@ -37,7 +37,7 @@ struct Vertex
 };
 
 //-------------------------------------------------------------------Mesh
-class Mesh
+class Mesh : public Resource
 {
 public:
   Mesh();

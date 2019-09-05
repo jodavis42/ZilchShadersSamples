@@ -6,6 +6,8 @@ target_sources(Graphics
     ${CMAKE_CURRENT_LIST_DIR}/ByteBuffer.cpp
     ${CMAKE_CURRENT_LIST_DIR}/ByteBuffer.hpp
     ${CMAKE_CURRENT_LIST_DIR}/GraphicsStandard.hpp
+    ${CMAKE_CURRENT_LIST_DIR}/MaterialProperties.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/MaterialProperties.hpp
     ${CMAKE_CURRENT_LIST_DIR}/Material.cpp
     ${CMAKE_CURRENT_LIST_DIR}/Material.hpp
     ${CMAKE_CURRENT_LIST_DIR}/Mesh.cpp
@@ -22,7 +24,7 @@ target_sources(Graphics
     ${CMAKE_CURRENT_LIST_DIR}/ShaderProperties.hpp
     ${CMAKE_CURRENT_LIST_DIR}/Renderer.cpp
     ${CMAKE_CURRENT_LIST_DIR}/Renderer.hpp
-    ${CMAKE_CURRENT_LIST_DIR}/ResourceLibrary.inl
+    ${CMAKE_CURRENT_LIST_DIR}/ResourceLibrary.cpp
     ${CMAKE_CURRENT_LIST_DIR}/ResourceLibrary.hpp
     ${CMAKE_CURRENT_LIST_DIR}/UniformBuffer.cpp
     ${CMAKE_CURRENT_LIST_DIR}/UniformBuffer.hpp
