@@ -1,7 +1,7 @@
 #pragma once
 
 struct SDL_Window;
-
+class Application;
 class SdlApp
 {
 public:
@@ -12,8 +12,8 @@ public:
   void Run();
   void Shutdown();
 
-private:
   SDL_Window* window;
+  Application* mApplication;
   void* glContext;
   int WindowWidth;
   int WindowHeight;

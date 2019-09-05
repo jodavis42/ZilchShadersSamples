@@ -4,6 +4,8 @@ target_sources(Framework
     ${CMAKE_CURRENT_LIST_DIR}/FrameworkStandard.hpp
     ${CMAKE_CURRENT_LIST_DIR}/SDL.cpp
     ${CMAKE_CURRENT_LIST_DIR}/SDL.hpp
+    ${CMAKE_CURRENT_LIST_DIR}/ImGuiHelper.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/ImGuiHelper.hpp
     ${CMAKE_CURRENT_LIST_DIR}/Application.cpp
     ${CMAKE_CURRENT_LIST_DIR}/Application.hpp
     ${CMAKE_CURRENT_LIST_DIR}/Mouse.cpp

@@ -5,8 +5,7 @@
 
 #define SDL_MAIN_HANDLED
 #include "SDL.h"
-//#include <SDL_opengl.h>
-
+#include "ImGuiHelper.hpp"
 
 #include <stdio.h>
 #include <time.h>
@@ -207,36 +206,19 @@ bool SdlApp::Init(int windowWidth, int windowHeight)
   SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE, 8);
   SDL_GL_SetAttribute(SDL_GL_BUFFER_SIZE, 32);
 
-  // Setup all the open-gl states we want to use (ones that don't change in the lifetime of the application)
-  // Note: These can be changed anywhere, but generally we don't change the back buffer color
-  //glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-
-  //glEnable(GL_LIGHTING);
-
-  // Initialize AntTweakBar
-  //TwInit(TW_OPENGL, nullptr);
-  //TwCopyStdStringToClientFunc(CopyStdStringToClient);
-  //TwWindowSize(WindowWidth, WindowHeight);
-
-  // Check to see if we had any errors
-  //PrintOpenGLErrors();
-
-  // We leave the console up since it's a useful debugging tool
-  //printf("OpenGL Info: %s\n", glGetString(GL_VERSION));
-  //printf("    Version: %s\n", glGetString(GL_VERSION));
-  //printf("     Vendor: %s\n", glGetString(GL_VENDOR));
-  //printf("   Renderer: %s\n", glGetString(GL_RENDERER));
+  mApplication = new Application();
+  mApplication->Initialize();
+  mApplication->mImGui = new ImGuiHelper();
+  mApplication->mImGui->Init(this);
 
   return true;
 }
 
 void SdlApp::Run()
 {
-  Application* application = new Application();
-  application->Initialize();
-  Reshape(application, WindowWidth, WindowHeight);
+  Reshape(mApplication, WindowWidth, WindowHeight);
   // Run the main message pump
-  MainLoop(window, application);
+  MainLoop(window, mApplication);
 }
 
 void SdlApp::Shutdown()

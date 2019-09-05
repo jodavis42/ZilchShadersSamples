@@ -16,6 +16,7 @@ Application::Application()
   mTextureLibrary = new TextureLibrary();
   mShaderLibrary = new ShaderLibrary();
   mZilchShaderManager = new ZilchShaderManager();
+  mImGui = nullptr;
 
   mCamera = new Camera();
   mCamera->SetCameraMode(Camera::Fps);
@@ -133,6 +134,32 @@ void Application::InitializeTextures()
   // Clear data (not needed since it's uploaded to the renderer now)
   texture->mTextureData.Clear();
   mTextureLibrary->Add(texture->mName, texture);
+
+  {
+    Texture* texture = new Texture();
+    texture->mSizeX = 16;
+    texture->mSizeY = 16;
+    texture->mName = "Texture2";
+    const int size = texture->mSizeX *  texture->mSizeY * 3;
+
+    texture->mTextureData.Resize(size);
+
+    for(int y = 0; y < texture->mSizeY; ++y)
+    {
+      for(int x = 0; x < texture->mSizeX; ++x)
+      {
+        int index = (x + y * texture->mSizeX) * 3;
+        float value = (x / (float)texture->mSizeX) * (y / (float)texture->mSizeY);
+        texture->mTextureData[index + 0] = value;
+        texture->mTextureData[index + 1] = value;
+        texture->mTextureData[index + 2] = value;
+      }
+    }
+    mRenderer->CreateTexture(texture);
+    // Clear data (not needed since it's uploaded to the renderer now)
+    texture->mTextureData.Clear();
+    mTextureLibrary->Add(texture->mName, texture);
+  }
 }
 
 void Application::InitializeShadersAndMaterials()
@@ -193,6 +220,11 @@ void Application::Draw()
     Model* model = mModels[modelIndex];
     Draw(model, transformData);
   }
+
+  mImGui->NewFrame();
+  mImGui->DrawMaterials(mMaterialLibrary);
+  mImGui->EndFrame();
+  mImGui->Render();
 }
 
 void Application::Draw(Model* model, TransformBufferData& transformData)

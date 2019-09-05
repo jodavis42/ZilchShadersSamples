@@ -11,6 +11,7 @@
 #include "Model.hpp"
 #include "ZilchShaderManager.hpp"
 #include "AppBuiltInTypes.hpp"
+#include "ImGuiHelper.hpp"
 
 //-------------------------------------------------------------------Application
 class Application
@@ -50,4 +51,5 @@ public:
   ShaderLibrary* mShaderLibrary;
   ZilchShaderManager* mZilchShaderManager;
   Array<Model*> mModels;
+  ImGuiHelper* mImGui;
 };
