@@ -5,13 +5,14 @@
 
 #include "GraphicsStandard.hpp"
 
+#include "Buffers.hpp"
+
 namespace Graphics
 {
 
 class Mesh;
 class Texture;
 class Shader;
-class UniformBuffer;
 
 //-------------------------------------------------------------------TextureData
 class TextureData
@@ -30,9 +31,10 @@ class ObjectData
 public:
   Mesh* mMesh;
   Shader* mShader;
-  Array<UniformBuffer*> mPreBoundBuffers;
-  Array<UniformBuffer*> mBuffersToBind;
   Array<TextureData> mTextures;
+
+  Array<BufferRenderData> mBuffers;
+  Array<EphemeralBuffer> mEphemeralBuffers;
 };
 
 //-------------------------------------------------------------------Renderer
@@ -52,12 +54,15 @@ public:
   virtual void CreateShader(Shader* shader) {};
   virtual void DestroyShader(Shader* shader) {};
 
-  virtual void CreateBuffer(UniformBuffer* buffer) {};
-  virtual void UpdateBufferData(UniformBuffer* buffer) {};
-  virtual void DestroyBuffer(UniformBuffer* buffer) {};
+  virtual BufferRenderData CreateBuffer(BufferCreationData& creationData, BufferType::Enum bufferType) { return BufferRenderData(); };
+  virtual void UploadBuffer(BufferRenderData& renderData, ByteBuffer& data) {};
+  virtual void* MapBuffer(BufferRenderData& renderData, size_t offset, size_t sizeInBytes, BufferMappingType::Enum mappingTypes) { return nullptr; };
+  virtual void UnMapBuffer(BufferRenderData& renderData) {};
+  virtual void DestroyBuffer(BufferRenderData& renderData) {};
 
   virtual void ClearTarget() {};
   virtual void Draw(ObjectData& objData) {};
+  virtual void DispatchCompute(ObjectData& objData, int x, int y, int z) {};
 
   virtual void Reshape(int width, int height, float aspectRatio) {};
   virtual Matrix4 BuildPerspectiveMatrix(float verticalFov, float aspectRatio, float nearDistance, float farDistance) abstract;

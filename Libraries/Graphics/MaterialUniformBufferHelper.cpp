@@ -5,7 +5,6 @@
 
 #include "MaterialUniformBufferHelper.hpp"
 
-#include "UniformBuffer.hpp"
 #include "Material.hpp"
 #include "Model.hpp"
 #include "Renderer.hpp"
@@ -15,19 +14,29 @@
 namespace Graphics
 {
 
+MaterialBufferData::MaterialBufferData()
+{
+  mBindingIndex = -1;
+  mBufferType = BufferType::None;
+}
+
 void ExtractMaterialData(Model* model, TextureLibrary* textureLibrary, MaterialRendererData& outputData)
 {
-  Material* material = model->mMaterial;
+  ExtractMaterialData(model->mMaterial, textureLibrary, outputData);
+}
 
+void ExtractMaterialData(Material* material, TextureLibrary* textureLibrary, MaterialRendererData& outputData)
+{
   /// Extract all of the uniform buffers from the material for this object
   outputData.mMaterialBuffers.Resize(Zero::FragmentType::Size);
 
   // First, get the buffer id's and sizes for each shader stage
   for(size_t fragIndex = 0; fragIndex < Zero::FragmentType::Size; ++fragIndex)
   {
-    UniformBuffer& materialBuffer = outputData.mMaterialBuffers[fragIndex];
+    MaterialBufferData& materialBuffer = outputData.mMaterialBuffers[fragIndex];
     Zero::ShaderResourceReflectionData& stageReflectionData = material->mMaterialStageBindingData[fragIndex].mReflectionData;
-    materialBuffer.mId = stageReflectionData.mBinding;
+    materialBuffer.mBufferType = BufferType::Uniform;
+    materialBuffer.mBindingIndex = stageReflectionData.mBinding;
     materialBuffer.mBufferData.Resize(stageReflectionData.mSizeInBytes);
   }
 
@@ -57,6 +66,15 @@ void ExtractMaterialData(Model* model, TextureLibrary* textureLibrary, MaterialR
           textureData.mTextureSlot = bindingData.mReflectionData.mBinding;
           outputData.mTextures.PushBack(textureData);
         }
+        continue;
+      }
+
+      Zero::ZilchShaderIRRuntimeArrayType runtimeArrayType;
+      if(runtimeArrayType.Load(materialProp->mShaderType))
+      {
+        MaterialSsboProperty* ssboProp = (MaterialSsboProperty*)materialProp;
+        Zero::ShaderResourceReflectionData& reflectionData = ssboProp->mBindingData.mReflectionData;
+        continue;
       }
       // Otherwise this is generic data, copy it to the relevant uniform buffer location
       else
@@ -64,7 +82,7 @@ void ExtractMaterialData(Model* model, TextureLibrary* textureLibrary, MaterialR
         MaterialDataProperty* dataProp = (MaterialDataProperty*)materialProp;
         Zero::ShaderResourceReflectionData& reflectionData = dataProp->mBindingData.mReflectionData;
 
-        UniformBuffer& materialBuffer = outputData.mMaterialBuffers[dataProp->mFragmentType];
+        MaterialBufferData& materialBuffer = outputData.mMaterialBuffers[dataProp->mFragmentType];
         WriteProperty(materialBuffer.mBufferData, dataProp, dataProp->mBindingData);
       }
     }

@@ -6,7 +6,6 @@
 #include "Texture.hpp"
 #include "Camera.hpp"
 #include "Shader.hpp"
-#include "UniformBuffer.hpp"
 #include "Material.hpp"
 #include "Model.hpp"
 #include "ZilchShaderManager.hpp"
@@ -24,12 +23,15 @@ public:
   void InitializeMeshes();
   void InitializeTextures();
   void InitializeShadersAndMaterials();
+  void InitializeBuffers();
+  void InitializeModels();
 
   void Update(float frameTime);
   // Reshape our projection matrix since the window size changed
   void Reshape(int width, int height, float aspectRatio);
 
   void Draw();
+  void DrawCompute(TransformBufferData& transformData);
   void Draw(Model* model, TransformBufferData& transformData);
 
   void OnKeyDown(unsigned int key);
@@ -40,8 +42,10 @@ public:
 
   FrameBufferData mFrameData;
   CameraBufferData mCameraData;
-  UniformBuffer* mFrameDataBuffer;
-  UniformBuffer* mCameraDataBuffer;
+
+  BufferRenderData mFrameDataBufferData;
+  BufferRenderData mCameraDataBufferData;
+  BufferRenderData mParticlesSsboBufferData;
 
   Renderer* mRenderer;
   Camera* mCamera;

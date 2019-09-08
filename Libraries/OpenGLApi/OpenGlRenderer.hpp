@@ -7,6 +7,7 @@
 
 #include "Renderer.hpp"
 #include "Texture.hpp"
+#include "Mesh.hpp"
 
 namespace Graphics
 {
@@ -14,7 +15,7 @@ namespace Graphics
 class GlMeshData;
 class GlTextureData;
 class GlShaderData;
-class GlUniformBufferData;
+class GlBufferData;
 
 //-------------------------------------------------------------------OpenGlRenderer
 class OpenGlRenderer : public Renderer
@@ -34,12 +35,15 @@ public:
   void CreateShader(Shader* shader) override;
   void DestroyShader(Shader* shader) override;
 
-  void CreateBuffer(UniformBuffer* buffer) override;
-  void UpdateBufferData(UniformBuffer* buffer) override;
-  void DestroyBuffer(UniformBuffer* buffer) override;
+  BufferRenderData CreateBuffer(BufferCreationData& creationData, BufferType::Enum bufferType) override;
+  void UploadBuffer(BufferRenderData& renderData, ByteBuffer& data) override;
+  void* MapBuffer(BufferRenderData& renderData, size_t offset, size_t sizeInBytes, BufferMappingType::Enum mappingTypes) override;
+  void UnMapBuffer(BufferRenderData& renderData) override;
+  void DestroyBuffer(BufferRenderData& renderData) override;
 
   void ClearTarget() override;
   void Draw(ObjectData& objData) override;
+  void DispatchCompute(ObjectData& objData, int x, int y, int z) override;
 
   void Reshape(int width, int height, float aspectRatio) override;
   Matrix4 BuildPerspectiveMatrix(float verticalFov, float aspectRatio, float nearDistance, float farDistance) override;
@@ -49,19 +53,23 @@ public:
   bool CompileShaderInternal(const char* shaderSource, size_t sourceLength, int shaderType, int& shaderId);
   bool LinkInternal(const Array<int>& shaderIds, int& programId);
 
-  void BindBufferInternal(GlShaderData* glShader, UniformBuffer* buffer, GlUniformBufferData* glBuffer);
-  void UpdateBufferDataInternal(UniformBuffer* buffer, GlUniformBufferData* glBuffer);
+  void BindInternal(GlShaderData* glShader, ObjectData& objData);
+  void UnBindInternal(GlShaderData* glShader, ObjectData& objData);
+  void DestroyTemporaryBindingsInternal(GlShaderData* glShader, ObjectData& objData);
   void BindTextureInternal(TextureData* textureData, GlTextureData* glTexture);
+  void BindInternal(GlBufferData* glBufferData, BufferRenderData* renderData);
+  void UnBindInternal(GlBufferData* glBufferData, BufferRenderData* renderData);
 
+  int GetElementType(MeshElementType::Enum elementType);
   int GetTextureType(TextureType::Enum type);
   int GetTextureAddressing(TextureAddressing::Enum addressing);
   int GetTextureMinFiltering(TextureFiltering::Enum filtering);
   int GetTextureMagFiltering(TextureFiltering::Enum filtering);
+  int GetBufferType(BufferType::Enum bufferType);
 
   HashMap<Mesh*, GlMeshData*> mGlMeshMap;
   HashMap<Texture*, GlTextureData*> mTextureMap;
   HashMap<Shader*, GlShaderData*> mShaderMap;
-  HashMap<UniformBuffer*, GlUniformBufferData*> mUniformBufferMap;
 };
 
 }//namespace Graphics

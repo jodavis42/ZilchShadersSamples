@@ -22,6 +22,7 @@ target_link_libraries(Framework
                       Common
                       ZilchShaders
                       OpenGL
+                      GLU
                       Glew32
                       Graphics
                       OpenGLApi

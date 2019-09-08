@@ -48,9 +48,19 @@ public:
 class MaterialTextureProperty : public MaterialResourceProperty
 {
 public:
-  virtual MaterialProperty* Clone() const;
+  MaterialProperty* Clone() const override;
 
   Array<ShaderPropertyBindingData> mBindingData;
+};
+
+//-------------------------------------------------------------------MaterialSsboProperty
+class MaterialSsboProperty : public MaterialProperty
+{
+public:
+  MaterialProperty* Clone() const override;
+
+  Array<byte> mData;
+  ShaderPropertyBindingData mBindingData;
 };
 
 template <typename PropertyType>

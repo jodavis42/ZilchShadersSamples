@@ -40,6 +40,7 @@ protected:
   };
 
 public:
+  String mDefaultName;
   ResourceMap mResourceMap;
 };
 

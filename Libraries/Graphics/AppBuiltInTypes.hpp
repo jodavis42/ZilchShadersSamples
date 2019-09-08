@@ -35,4 +35,12 @@ public:
   Matrix4 mPerspectiveToApiPerspective;
 };
 
+//-------------------------------------------------------------------TransformBufferData
+/// Used for particle system compute shaders
+struct ParticleData
+{
+  Vector4 mPosition;
+  Vector4 mVelocity;
+};
+
 }//namespace Graphics

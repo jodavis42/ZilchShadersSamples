@@ -16,6 +16,7 @@ MaterialProperty::MaterialProperty()
   mValidReflectionObject = false;
 }
 
+//-------------------------------------------------------------------MaterialDataProperty
 MaterialProperty* MaterialDataProperty::Clone() const
 {
   MaterialDataProperty* result = new MaterialDataProperty();
@@ -27,6 +28,7 @@ MaterialProperty* MaterialDataProperty::Clone() const
   return result;
 }
 
+//-------------------------------------------------------------------MaterialTextureProperty
 MaterialProperty* MaterialTextureProperty::Clone() const
 {
   MaterialTextureProperty* result = new MaterialTextureProperty();
@@ -36,6 +38,14 @@ MaterialProperty* MaterialTextureProperty::Clone() const
   result->mValidReflectionObject = mValidReflectionObject;
   result->mBindingData = mBindingData;
   result->mResourceName = mResourceName;
+  return result;
+}
+
+//-------------------------------------------------------------------MaterialSsboProperty
+MaterialProperty* MaterialSsboProperty::Clone() const
+{
+  MaterialSsboProperty* result = new MaterialSsboProperty();
+  *result = *this;
   return result;
 }
 

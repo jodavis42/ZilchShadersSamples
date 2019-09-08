@@ -11,15 +11,14 @@
 #include "Mesh.hpp"
 #include "Texture.hpp"
 #include "Shader.hpp"
-#include "UniformBuffer.hpp"
 
 namespace Graphics
 {
 
-static int mPositionLocation = 0;
-static int mNormalLocation = 1;
-static int mUvLocation = 4;
-static int mColorLocation = 5;
+static int mNormalLocation = 2;
+static int mPositionLocation = 3;
+static int mUvLocation = 1;
+static int mColorLocation = 4;
 
 bool ReportOpenGLErrors(const char* file, int line)
 {
@@ -50,8 +49,8 @@ bool ReportOpenGLErrors(const char* file, int line)
     }
 
     // Print the error out to the console and return that an error occurred
-    //const GLubyte* errorStr = gluErrorString(errorCode);
-    //ZPrint("OpenGL Error %s(%d): %s\n", fileLastSlash, line, errorStr);
+    const GLubyte* errorStr = gluErrorString(errorCode);
+    ZPrint("OpenGL Error %s(%d): %s\n", fileLastSlash, line, errorStr);
     return true;
   }
 
@@ -67,9 +66,10 @@ public:
   size_t mIndexCount;
   size_t mVertexCount;
 
-  unsigned int mTriangleArray;
-  unsigned int mTriangleVertex;
-  unsigned int mTriangleIndex;
+  unsigned int mVertexArray;
+  unsigned int mVertexBuffer;
+  unsigned int mIndexBuffer;
+  unsigned int mElementType;
 };
 
 //-------------------------------------------------------------------GlTextureData
@@ -86,14 +86,19 @@ public:
   int mVertexShaderId;
   int mPixelShaderId;
   int mProgramId;
+
+  int mComputeShaderId;
+  int mComputeProgramId;
 };
 
-//-------------------------------------------------------------------GlUniformBufferData
-class GlUniformBufferData
+//-------------------------------------------------------------------GlBufferData
+class GlBufferData
 {
 public:
   int mBufferId;
-  int mBlockBinding;
+  int mBufferType;
+  int mUsage;
+  size_t mSizeInBytes;
 };
 
 //-------------------------------------------------------------------GlTextureEnums
@@ -158,12 +163,13 @@ void OpenGlRenderer::CreateMesh(Mesh* mesh)
 
   glMesh->mIndexCount = mesh->mIndices.Size();
   glMesh->mVertexCount = mesh->mVertices.Size();
+  glMesh->mElementType = GetElementType(mesh->mElementType);
 
-  glGenVertexArrays(1, &glMesh->mTriangleArray);
-  glBindVertexArray(glMesh->mTriangleArray);
+  glGenVertexArrays(1, &glMesh->mVertexArray);
+  glBindVertexArray(glMesh->mVertexArray);
 
-  glGenBuffers(1, &glMesh->mTriangleVertex);
-  glBindBuffer(GL_ARRAY_BUFFER, glMesh->mTriangleVertex);
+  glGenBuffers(1, &glMesh->mVertexBuffer);
+  glBindBuffer(GL_ARRAY_BUFFER, glMesh->mVertexBuffer);
 
   glBufferData(GL_ARRAY_BUFFER, sizeof(Vertex) * mesh->mVertices.Size(), mesh->mVertices.Data(), GL_STATIC_DRAW);
 
@@ -175,12 +181,19 @@ void OpenGlRenderer::CreateMesh(Mesh* mesh)
   glVertexAttribPointer(mUvLocation, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, mUv));
   glEnableVertexAttribArray(mColorLocation);
   glVertexAttribPointer(mColorLocation, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, mColor));
-
-  glGenBuffers(1, &glMesh->mTriangleIndex);
-  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, glMesh->mTriangleIndex);
-  glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned int) * mesh->mIndices.Size(), mesh->mIndices.Data(), GL_STATIC_DRAW);
-
+  
+  glMesh->mIndexCount = mesh->mIndexCount;
+  glMesh->mIndexBuffer = -1;
+  if(!mesh->mIndices.Empty())
+  {
+    glMesh->mIndexCount = mesh->mIndices.Size();
+    glGenBuffers(1, &glMesh->mIndexBuffer);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, glMesh->mIndexBuffer);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned int) * mesh->mIndices.Size(), mesh->mIndices.Data(), GL_STATIC_DRAW);
+  }
   glBindVertexArray(0);
+  glBindBuffer(GL_ARRAY_BUFFER, 0);
+  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
   mGlMeshMap[mesh] = glMesh;
 }
@@ -190,9 +203,9 @@ void OpenGlRenderer::DestroyMesh(Mesh* mesh)
   GlMeshData* glMesh = mGlMeshMap[mesh];
   mGlMeshMap.Erase(mesh);
 
-  glDeleteBuffers(1, &glMesh->mTriangleVertex);
-  glDeleteBuffers(1, &glMesh->mTriangleIndex);
-  glDeleteVertexArrays(1, &glMesh->mTriangleArray);
+  glDeleteBuffers(1, &glMesh->mVertexBuffer);
+  glDeleteBuffers(1, &glMesh->mIndexBuffer);
+  glDeleteVertexArrays(1, &glMesh->mVertexArray);
 
   delete glMesh;
 }
@@ -210,10 +223,10 @@ void OpenGlRenderer::CreateTexture(Texture* texture)
   glGenTextures(1, &glTexture->mTextureId);
   glBindTexture(GL_TEXTURE_2D, glTexture->mTextureId);
 
-  glTexParameteri(textureType, GL_TEXTURE_WRAP_S, texture->mAddressingX);
-  glTexParameteri(textureType, GL_TEXTURE_WRAP_T, texture->mAddressingY);
-  glTexParameteri(textureType, GL_TEXTURE_MIN_FILTER, texture->mMinFilter);
-  glTexParameteri(textureType, GL_TEXTURE_MAG_FILTER, texture->mMagFilter);
+  glTexParameteri(textureType, GL_TEXTURE_WRAP_S, GetTextureAddressing(texture->mAddressingX));
+  glTexParameteri(textureType, GL_TEXTURE_WRAP_T, GetTextureAddressing(texture->mAddressingY));
+  glTexParameteri(textureType, GL_TEXTURE_MIN_FILTER, GetTextureMinFiltering(texture->mMinFilter));
+  glTexParameteri(textureType, GL_TEXTURE_MAG_FILTER, GetTextureMagFiltering(texture->mMagFilter));
 
   glTexImage2D(textureType, 0, textureFormat.mInternalFormat, sizeX, sizeY, 0, textureFormat.mFormat, textureFormat.mType, texture->mTextureData.Data());
   glGenerateMipmap(textureType);
@@ -233,16 +246,24 @@ void OpenGlRenderer::CreateShader(Shader* shader)
 {
   GlShaderData* glShader = new GlShaderData();
 
-  Array<int> ids;
+  {
+    Array<int> ids;
 
-  if(CompileShaderInternal(shader->mShaderSource[Zero::FragmentType::Vertex], GL_VERTEX_SHADER, glShader->mVertexShaderId))
-    ids.PushBack(glShader->mVertexShaderId);
+    if(CompileShaderInternal(shader->mShaderSource[Zero::FragmentType::Vertex], GL_VERTEX_SHADER, glShader->mVertexShaderId))
+      ids.PushBack(glShader->mVertexShaderId);
+    if(CompileShaderInternal(shader->mShaderSource[Zero::FragmentType::Pixel], GL_FRAGMENT_SHADER, glShader->mPixelShaderId))
+      ids.PushBack(glShader->mPixelShaderId);
 
-  if(CompileShaderInternal(shader->mShaderSource[Zero::FragmentType::Pixel], GL_FRAGMENT_SHADER, glShader->mPixelShaderId))
-    ids.PushBack(glShader->mPixelShaderId);
+    LinkInternal(ids, glShader->mProgramId);
+  }
+  {
+    Array<int> ids;
 
-  LinkInternal(ids, glShader->mProgramId);
+    if(CompileShaderInternal(shader->mShaderSource[Zero::FragmentType::Compute], GL_COMPUTE_SHADER, glShader->mComputeShaderId))
+      ids.PushBack(glShader->mComputeShaderId);
 
+    LinkInternal(ids, glShader->mProgramId);
+  }
   mShaderMap[shader] = glShader;
 }
 
@@ -258,29 +279,69 @@ void OpenGlRenderer::DestroyShader(Shader* shader)
   delete glShader;
 }
 
-void OpenGlRenderer::CreateBuffer(UniformBuffer* buffer)
+BufferRenderData OpenGlRenderer::CreateBuffer(BufferCreationData& creationData, BufferType::Enum bufferType)
 {
-  GlUniformBufferData* glBuffer = new GlUniformBufferData();
-  mUniformBufferMap[buffer] = glBuffer;
+  BufferRenderData result;
+  GlBufferData* glBuffer = new GlBufferData();
+  result.mKey.mKey = glBuffer;
 
   GLuint id;
   glGenBuffers(1, &id);
   glBuffer->mBufferId = id;
+  glBuffer->mBufferType = GetBufferType(bufferType);
+  if(bufferType == BufferType::Uniform)
+    glBuffer->mUsage = GL_DYNAMIC_DRAW;
+  else if(bufferType == BufferType::StructuredStorage)
+    glBuffer->mUsage = GL_STATIC_DRAW;
+  glBuffer->mSizeInBytes = creationData.mSizeInBytes;
 
-  UpdateBufferDataInternal(buffer, glBuffer);
+  if(creationData.mBufferData != nullptr)
+  {
+    UploadBuffer(result, *creationData.mBufferData);
+  }
+
+  PrintOpenGLErrors();
+  return result;
 }
 
-void OpenGlRenderer::UpdateBufferData(UniformBuffer* buffer)
+void OpenGlRenderer::UploadBuffer(BufferRenderData& renderData, ByteBuffer& data)
 {
-  GlUniformBufferData* glBuffer = mUniformBufferMap[buffer];
-  UpdateBufferDataInternal(buffer, glBuffer);
+  GlBufferData* glBuffer = (GlBufferData*)renderData.mKey.mKey;
+  glBindBuffer(glBuffer->mBufferType, glBuffer->mBufferId);
+  glBufferData(glBuffer->mBufferType, data.Size(), data.Data(), glBuffer->mUsage);
+  glBindBuffer(glBuffer->mBufferType, 0);
 }
 
-void OpenGlRenderer::DestroyBuffer(UniformBuffer* buffer)
+void* OpenGlRenderer::MapBuffer(BufferRenderData& renderData, size_t offset, size_t sizeInBytes, BufferMappingType::Enum mappingTypes)
 {
-  GlUniformBufferData* glBuffer = mUniformBufferMap[buffer];
-  mUniformBufferMap.Erase(buffer);
+  PrintOpenGLErrors();
+  int access = 0;
+  if(mappingTypes & BufferMappingType::Read)
+    access |= GL_MAP_READ_BIT;
+  if(mappingTypes & BufferMappingType::Write)
+    access |= GL_MAP_WRITE_BIT;
+  if(mappingTypes & BufferMappingType::InvalidateRange)
+    access |= GL_MAP_INVALIDATE_RANGE_BIT;
+  if(mappingTypes & BufferMappingType::InvalidateBuffer)
+    access |= GL_MAP_INVALIDATE_BUFFER_BIT;
 
+  GlBufferData* glBuffer = (GlBufferData*)renderData.mKey.mKey;
+  glBindBuffer(glBuffer->mBufferType, glBuffer->mBufferId);
+  if(mappingTypes != BufferMappingType::Read)
+    glBufferData(glBuffer->mBufferType, sizeInBytes, NULL, glBuffer->mUsage);
+  return glMapBufferRange(glBuffer->mBufferType, offset, sizeInBytes, access);
+}
+
+void OpenGlRenderer::UnMapBuffer(BufferRenderData& renderData)
+{
+  GlBufferData* glBuffer = (GlBufferData*)renderData.mKey.mKey;
+  glUnmapBuffer(glBuffer->mBufferType);
+  glBindBuffer(glBuffer->mBufferType, 0);
+}
+
+void OpenGlRenderer::DestroyBuffer(BufferRenderData& renderData)
+{
+  GlBufferData* glBuffer = (GlBufferData*)renderData.mKey.mKey;
   GLuint id = glBuffer->mBufferId;
   glDeleteBuffers(1, &id);
   delete glBuffer;
@@ -297,40 +358,35 @@ void OpenGlRenderer::Draw(ObjectData& objData)
   GlShaderData* glShader = mShaderMap.FindValue(objData.mShader, nullptr);
 
   glUseProgram(glShader->mProgramId);
+  
+  BindInternal(glShader, objData);
 
-  for(size_t j = 0; j < objData.mBuffersToBind.Size(); ++j)
-  {
-    UniformBuffer* buffer = objData.mBuffersToBind[j];
-    CreateBuffer(buffer);
-    GlUniformBufferData* glBuffer = mUniformBufferMap[buffer];
-    BindBufferInternal(glShader, buffer, glBuffer);
-  }
-  for(size_t j = 0; j < objData.mPreBoundBuffers.Size(); ++j)
-  {
-    UniformBuffer* buffer = objData.mPreBoundBuffers[j];
-    GlUniformBufferData* glBuffer = mUniformBufferMap[buffer];
-    BindBufferInternal(glShader, buffer, glBuffer);
-  }
-  for(size_t j = 0; j < objData.mTextures.Size(); ++j)
-  {
-    TextureData& textureData = objData.mTextures[j];
-    GlTextureData* glTexture = mTextureMap.FindValue(textureData.mTexture, nullptr);
-    if(glTexture != nullptr)
-      BindTextureInternal(&textureData, glTexture);
-  }
-
-  glBindVertexArray(glMesh->mTriangleArray);
-
-  glDrawElements(GL_TRIANGLES, glMesh->mIndexCount, GL_UNSIGNED_INT, (void*)0);
-
+  glBindVertexArray(glMesh->mVertexArray);
+  if(glMesh->mIndexBuffer == -1)
+    // If nothing is bound, glDrawArrays will invoke the shader pipeline the given number of times
+    glDrawArrays(glMesh->mElementType, 0, glMesh->mIndexCount);
+  else
+    glDrawElements(glMesh->mElementType, glMesh->mIndexCount, GL_UNSIGNED_INT, (void*)0);
   glBindVertexArray(0);
-  glUseProgram(0);
 
-  for(size_t j = 0; j < objData.mBuffersToBind.Size(); ++j)
-  {
-    UniformBuffer* buffer = objData.mBuffersToBind[j];
-    DestroyBuffer(buffer);
-  }
+  UnBindInternal(glShader, objData);
+  
+  glUseProgram(0);
+  PrintOpenGLErrors();
+}
+
+void OpenGlRenderer::DispatchCompute(ObjectData& objData, int x, int y, int z)
+{
+  GlShaderData* glShader = mShaderMap.FindValue(objData.mShader, nullptr);
+
+  glUseProgram(glShader->mProgramId);
+
+  BindInternal(glShader, objData);
+
+  glDispatchCompute(x, y, z);
+
+  glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT | GL_BUFFER_UPDATE_BARRIER_BIT);
+  glUseProgram(0);
 }
 
 void OpenGlRenderer::Reshape(int width, int height, float aspectRatio)
@@ -373,7 +429,9 @@ Matrix4 OpenGlRenderer::BuildPerspectiveMatrix(float verticalFov, float aspectRa
 
 ZilchShaderIRBackend* OpenGlRenderer::CreateBackend()
 {
-  return new Zero::ZilchShaderGlslBackend();
+  auto backend = new Zero::ZilchShaderGlslBackend();
+  backend->mTargetVersion = 440;
+  return backend;
 }
 
 bool OpenGlRenderer::CompileShaderInternal(const String& shaderSource, int shaderType, int& shaderId)
@@ -383,6 +441,9 @@ bool OpenGlRenderer::CompileShaderInternal(const String& shaderSource, int shade
 
 bool OpenGlRenderer::CompileShaderInternal(const char* shaderSource, size_t sourceLength, int shaderType, int& shaderId)
 {
+  if(sourceLength == 0)
+    return false;
+
   shaderId = glCreateShader(shaderType);
 
   // Load the code
@@ -404,19 +465,21 @@ bool OpenGlRenderer::CompileShaderInternal(const char* shaderSource, size_t sour
   GLint status = 0;
   glGetShaderiv(shaderId, GL_COMPILE_STATUS, &status);
 
-  //
-  //// Report errors if compilation failed
+  // Report errors if compilation failed
   if(status == GL_FALSE)
   {
     Warn("%s: %s", ShaderTypeToString(shaderType), strInfoLog);
     return false;
   }
-  //PrintOpenGLErrors();
+  PrintOpenGLErrors();
   return true;
 }
 
 bool OpenGlRenderer::LinkInternal(const Array<int>& shaderIds, int& programId)
 {
+  if(shaderIds.Empty())
+    return false;
+
   //create the shader program
   programId = glCreateProgram();
 
@@ -452,22 +515,58 @@ bool OpenGlRenderer::LinkInternal(const Array<int>& shaderIds, int& programId)
   return true;
 }
 
-void OpenGlRenderer::BindBufferInternal(GlShaderData* glShader, UniformBuffer* buffer, GlUniformBufferData* glBuffer)
+void OpenGlRenderer::BindInternal(GlShaderData* glShader, ObjectData& objData)
 {
-  GLint blockIndex = glGetUniformBlockIndex(glShader->mProgramId, buffer->mBufferName.c_str());
-
-  GLint blockBinding = buffer->mId;
-  //glUniformBlockBinding(glShader->mProgramId, blockIndex, blockBinding);
-
-  glBindBufferBase(GL_UNIFORM_BUFFER, blockBinding, glBuffer->mBufferId);
-  ++blockBinding;
+  for(size_t j = 0; j < objData.mEphemeralBuffers.Size(); ++j)
+  {
+    EphemeralBuffer& ephemeralBuffer = objData.mEphemeralBuffers[j];
+    BufferRenderData renderData = CreateBuffer(ephemeralBuffer.mCreationData, ephemeralBuffer.mBufferType);
+    ephemeralBuffer.mRenderData.mKey = renderData.mKey;
+    GlBufferData* glBuffer = (GlBufferData*)ephemeralBuffer.mRenderData.mKey.mKey;
+    BindInternal(glBuffer, &ephemeralBuffer.mRenderData);
+  }
+  for(size_t j = 0; j < objData.mTextures.Size(); ++j)
+  {
+    TextureData& textureData = objData.mTextures[j];
+    GlTextureData* glTexture = mTextureMap.FindValue(textureData.mTexture, nullptr);
+    if(glTexture != nullptr)
+      BindTextureInternal(&textureData, glTexture);
+  }
+  for(size_t j = 0; j < objData.mBuffers.Size(); ++j)
+  {
+    BufferRenderData& bufferRenderData = objData.mBuffers[j];
+    GlBufferData* glBuffer = (GlBufferData*)bufferRenderData.mKey.mKey;
+    if(glBuffer != nullptr)
+      BindInternal(glBuffer, &bufferRenderData);
+  }
 }
 
-void OpenGlRenderer::UpdateBufferDataInternal(UniformBuffer* buffer, GlUniformBufferData* glBuffer)
+void OpenGlRenderer::UnBindInternal(GlShaderData* glShader, ObjectData& objData)
 {
-  glBindBuffer(GL_UNIFORM_BUFFER, glBuffer->mBufferId);
-  glBufferData(GL_UNIFORM_BUFFER, buffer->mBufferData.Size(), buffer->mBufferData.Data(), GL_DYNAMIC_DRAW);
-  glBindBuffer(GL_UNIFORM_BUFFER, 0);
+  for(size_t i = 0; i < objData.mEphemeralBuffers.Size(); ++i)
+  {
+    EphemeralBuffer& ephemeralBuffer = objData.mEphemeralBuffers[i];
+    GlBufferData* glBuffer = (GlBufferData*)ephemeralBuffer.mRenderData.mKey.mKey;
+    if(glBuffer != nullptr)
+      UnBindInternal(glBuffer, &ephemeralBuffer.mRenderData);
+  }
+  for(size_t j = 0; j < objData.mBuffers.Size(); ++j)
+  {
+    BufferRenderData& bufferRenderData = objData.mBuffers[j];
+    GlBufferData* glBuffer = (GlBufferData*)bufferRenderData.mKey.mKey;
+    if(glBuffer != nullptr)
+      UnBindInternal(glBuffer, &bufferRenderData);
+  }
+  DestroyTemporaryBindingsInternal(glShader, objData);
+}
+
+void OpenGlRenderer::DestroyTemporaryBindingsInternal(GlShaderData* glShader, ObjectData& objData)
+{
+  for(size_t j = 0; j < objData.mEphemeralBuffers.Size(); ++j)
+  {
+    EphemeralBuffer& ephemeralBuffer = objData.mEphemeralBuffers[j];
+    DestroyBuffer(ephemeralBuffer.mRenderData);
+  }
 }
 
 void OpenGlRenderer::BindTextureInternal(TextureData* textureData, GlTextureData* glTexture)
@@ -477,10 +576,29 @@ void OpenGlRenderer::BindTextureInternal(TextureData* textureData, GlTextureData
   glActiveTexture(GL_TEXTURE0 + textureData->mTextureSlot);
   glBindTexture(GL_TEXTURE_2D, 0);
   glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
-  //if(samplerObjects)
-  //  glBindSampler(textureData->mTextureSlot, 0);
-  // Bind texture
+
   glBindTexture(textureType, glTexture->mTextureId);
+}
+
+void OpenGlRenderer::BindInternal(GlBufferData* glBufferData, BufferRenderData* renderData)
+{
+  glBindBufferBase(glBufferData->mBufferType, renderData->mBindingIndex, glBufferData->mBufferId);
+}
+
+void OpenGlRenderer::UnBindInternal(GlBufferData* glBufferData, BufferRenderData* renderData)
+{
+  glBindBufferBase(glBufferData->mBufferType, renderData->mBindingIndex, 0);
+}
+
+int OpenGlRenderer::GetElementType(MeshElementType::Enum elementType)
+{
+  switch(elementType)
+  {
+  case MeshElementType::Points: return GL_POINTS;
+  case MeshElementType::Lines: return GL_LINES;
+  case MeshElementType::Triangles: return GL_TRIANGLES;
+  default: return 0;
+  }
 }
 
 int OpenGlRenderer::GetTextureType(TextureType::Enum type)
@@ -522,6 +640,16 @@ int OpenGlRenderer::GetTextureMagFiltering(TextureFiltering::Enum filtering)
   case TextureFiltering::Nearest:   return GL_NEAREST;
   case TextureFiltering::Bilinear:  return GL_LINEAR;
   case TextureFiltering::Trilinear: return GL_LINEAR;
+  default: return 0;
+  }
+}
+
+int OpenGlRenderer::GetBufferType(BufferType::Enum bufferType)
+{
+  switch(bufferType)
+  {
+  case BufferType::Uniform:   return GL_UNIFORM_BUFFER;
+  case BufferType::StructuredStorage:   return GL_SHADER_STORAGE_BUFFER;
   default: return 0;
   }
 }

@@ -1,0 +1,266 @@
+struct ParticleData
+{
+  var Position : Real4;
+  var Velocity : Real4;
+}
+
+[Compute]
+struct SimpleParticleReader
+{
+  [FragmentShared][Input] var Particles : RuntimeArray[ParticleData];
+  [Input] var GlobalInvocationId : Integer3;
+  
+  [Output] var WorldPosition : Real3;
+  [Output] var WorldVelocity : Real3;
+  [Output] var WorldForce : Real3;
+  [Output] var WorldAcceleration : Real3;
+  
+  function Main()
+  {
+    var index = this.GlobalInvocationId.X;
+    var particle = this.Particles[index];
+    this.WorldPosition = particle.Position.XYZ;
+    this.WorldVelocity = particle.Velocity.XYZ;
+  }
+}
+
+[Compute]
+struct SimpleParticleWriter
+{
+  [FragmentShared][Input] var Particles : RuntimeArray[ParticleData];
+  [Input] var GlobalInvocationId : Integer3;
+  
+  [Input] var WorldPosition : Real3;
+  [Input] var WorldVelocity : Real3;
+  
+  function Main()
+  {
+    var index = this.GlobalInvocationId.X;
+    this.Particles[index].Position.XYZ = this.WorldPosition;
+    this.Particles[index].Velocity.XYZ = this.WorldVelocity;
+  }
+}
+
+[Compute]
+struct ParticleWorldGravity
+{
+  var Gravity : Real3 = Real3(0, -1, 0);
+  
+  [Input][Output] var WorldAcceleration : Real3;
+  
+  function Main()
+  {
+    this.WorldAcceleration += this.Gravity;
+  }
+}
+
+[Compute]
+struct ParticleWorldBounds
+{
+  var WorldMin : Real3 = Real3(-1);
+  var WorldMax : Real3 = Real3(1);
+  
+  [Input][Output] var WorldPosition : Real3;
+  [Input][Output] var WorldVelocity : Real3;
+  
+  function Main()
+  {
+    var vel = this.WorldVelocity;
+    for(var i = 0; i < 3; ++i)
+    {
+      if(this.WorldPosition[i] < this.WorldMin[i] && vel[i] < 0)
+      {
+        vel[i] = Math.Abs(vel[i]);
+        this.WorldPosition[i] = this.WorldMin[i];
+      }
+      else if(this.WorldPosition[i] > this.WorldMax[i] && vel[i] > 0)
+      {
+        vel[i] = -Math.Abs(vel[i]);
+        this.WorldPosition[i] = this.WorldMax[i];
+      }
+    }
+    this.WorldVelocity = vel;
+  }
+}
+
+[Compute]
+struct ParticleDragForce
+{
+  var B : Real = 0.1;
+  [Input][Output] var WorldVelocity : Real3;
+  [Input][Output] var WorldForce : Real3;
+  
+  function Main()
+  {
+    this.WorldForce += -this.WorldVelocity * this.B;
+  }
+}
+
+// Computes an interpolated value of two strengths based upon a falloff of two values at two radii.
+struct PointValueInterpolator
+{
+  [Static] function Compute(centerPos : Real3, targetPos : Real3,
+                            innerRadius : Real, outerRadius : Real,
+                            innerStrength : Real, outerStrength : Real) : Real
+  {
+    var dir = targetPos - centerPos;
+    var dist = Math.Length(dir);
+    var t = (dist - innerRadius) / (outerRadius - innerRadius);
+    t = Math.Max(0, t);
+    t = t * t;
+    var strength = Math.Lerp(innerStrength, outerStrength, t);
+    return strength;
+    //return Math.Clamp(strength, innerStrength, outerStrength);
+  }
+}
+
+[Compute]
+struct ParticlePointAttractorForce
+{
+  [Input][Output] var WorldPosition : Real3;
+  [Input][Output] var WorldForce : Real3;
+  
+  function ApplyPointForce(target : Real3)
+  {
+    var innerRadius = 0.01;
+    var innerStrength = 0.5;
+    var outerRadius = 0.75;
+    var outerStrength = 6.0;
+    
+    var pos = Real3(this.WorldPosition.XY, 0);
+    var forceDir = Math.Normalize(target - pos);
+    
+    var strength = PointValueInterpolator.Compute(target, pos, innerRadius, outerRadius, innerStrength, outerStrength);
+    strength = Math.Max(0, strength);
+    
+    this.WorldForce += strength * forceDir;
+  }
+  
+  function Main()
+  {
+    this.ApplyPointForce(Real3(0));
+  }
+}
+
+[Compute]
+struct ParticleTwistForce
+{
+  [Input][Output] var WorldPosition : Real3;
+  [Input][Output] var WorldForce : Real3;
+  
+  var TwistStrength : Real = 0.5;
+  
+  function ApplyTwistForce(twistCenter : Real3)
+  {
+    var innerRadius = 0.01;
+    var innerStrength = this.TwistStrength;
+    var outerRadius = 0.75;
+    var outerStrength = this.TwistStrength * 0.1;
+   
+    var pos = Real3(this.WorldPosition.XY, 0);
+    var dir = twistCenter - pos;
+    var forceDir = Real3(-dir.Y, dir.X, 0);
+    forceDir = Math.Normalize(forceDir);
+    
+    var strength = PointValueInterpolator.Compute(twistCenter, pos, innerRadius, outerRadius, innerStrength, outerStrength);
+    
+    this.WorldForce += strength * forceDir;
+  }
+  
+  function Main()
+  {
+    this.ApplyTwistForce(Real3(0));
+  }
+}
+
+[Compute]
+struct ParticleMouseForce
+{
+  [Input] var MousePosition : Real2;
+  [Input] var MouseMovement : Real2;
+  //[Input] 
+  var Radius : Real = 0.1;
+  //[Input]
+  var ForceScalar : Real = 5.0;
+  
+  [Input][Output] var WorldPosition : Real3;
+  [Input][Output] var WorldForce : Real3;
+  
+  function Main()
+  {
+    var distanceSq = Math.DistanceSq(this.WorldPosition.XY, this.MousePosition);
+    if(distanceSq < this.Radius * this.Radius)
+      this.WorldForce += Real3(this.MouseMovement, 0) * this.ForceScalar;
+  }
+}
+
+[Compute]
+struct ParticleNBodyForce
+{
+  [Input] var GlobalInvocationId : Integer3;
+  [FragmentShared][Input] var Particles : RuntimeArray[ParticleData];
+  
+  [Input] var WorldPosition : Real3;
+  [Input][Output] var WorldForce : Real3;
+  
+  var DistanceScalar : Real = 100.0;
+  var GravityConstant : Real = 10.0;
+  
+  function ComputeForce(p0 : Real3, p1 : Real3) : Real3
+  {
+    var epsilon = 0.001;
+    var diff = p1 - p0;
+    var dist = Math.Length(diff);
+    if(dist < epsilon)
+      return Real3();
+    dist *= this.DistanceScalar;
+    
+    
+    
+    // Numerical clamping
+    dist = Math.Max(dist, 1);
+    
+    var scalar = this.GravityConstant / (dist * dist * dist + epsilon);
+    
+    //var distSq = Math.LengthSq(diff * this.DistanceScalar * this.DistanceScalar);
+    //distSq = Math.Max(distSq, 1);
+    //diff = Math.Normalize(diff);
+    //var scalar = this.GravityConstant / (distSq + epsilon);
+    
+    return scalar * diff;
+  }
+  
+  function Main()
+  {
+    var index = this.GlobalInvocationId.X;
+    
+    var force = Real3();
+    for(var j = 0; j < this.Particles.Count; ++j)
+    {
+      if(index != j)
+      {
+        var otherPos = this.Particles[j].Position.XYZ;
+        force += this.ComputeForce(this.WorldPosition, otherPos);
+      }
+    }
+    this.WorldForce += force;
+  }
+}
+
+[Compute]
+struct ParticleIntegration
+{
+  var Dt : Real = 0.016;
+  
+  [Input][Output] var WorldForce : Real3;
+  [Input][Output] var WorldAcceleration : Real3;
+  [Input][Output] var WorldPosition : Real3;
+  [Input][Output] var WorldVelocity : Real3;
+  
+  function Main()
+  {
+    this.WorldAcceleration += this.WorldForce;// (Mass = 1)
+    this.WorldVelocity += this.WorldAcceleration * this.Dt;
+    this.WorldPosition += this.WorldVelocity * this.Dt;
+  }
+}

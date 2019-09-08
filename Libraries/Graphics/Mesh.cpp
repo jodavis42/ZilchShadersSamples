@@ -41,6 +41,7 @@ void Vertex::Set(const Vector3& pos, const Vector3& normal, const Vector2& uv, c
 Mesh::Mesh()
 {
   mElementType = MeshElementType::Triangles;
+  mIndexCount = 0;
 }
 
 }//namespace Graphics

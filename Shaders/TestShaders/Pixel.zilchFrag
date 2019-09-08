@@ -9,11 +9,8 @@ struct Pixel
 
   function Main()
   {
-    
     this.Uv = Math.Sin(this.Uv + Real2(this.FrameTime * this.Frequency));
     this.Uv = (this.Uv + Real2(1)) / 2.0;
-    //this.Target0 = Real4(this.Uv, 0, 1);
-
     this.Target0 = this.SampledImage.Sample(this.Uv);
   }
 }

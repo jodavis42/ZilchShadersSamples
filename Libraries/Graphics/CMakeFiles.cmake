@@ -22,12 +22,12 @@ target_sources(Graphics
     ${CMAKE_CURRENT_LIST_DIR}/Shader.hpp
     ${CMAKE_CURRENT_LIST_DIR}/ShaderProperties.cpp
     ${CMAKE_CURRENT_LIST_DIR}/ShaderProperties.hpp
+    ${CMAKE_CURRENT_LIST_DIR}/Buffers.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/Buffers.hpp
     ${CMAKE_CURRENT_LIST_DIR}/Renderer.cpp
     ${CMAKE_CURRENT_LIST_DIR}/Renderer.hpp
     ${CMAKE_CURRENT_LIST_DIR}/ResourceLibrary.cpp
     ${CMAKE_CURRENT_LIST_DIR}/ResourceLibrary.hpp
-    ${CMAKE_CURRENT_LIST_DIR}/UniformBuffer.cpp
-    ${CMAKE_CURRENT_LIST_DIR}/UniformBuffer.hpp
     ${CMAKE_CURRENT_LIST_DIR}/ZilchShaderManager.cpp
     ${CMAKE_CURRENT_LIST_DIR}/ZilchShaderManager.hpp
 )

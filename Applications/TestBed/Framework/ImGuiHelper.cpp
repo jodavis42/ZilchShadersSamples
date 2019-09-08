@@ -70,7 +70,8 @@ void ImGuiHelper::DrawMaterials(MaterialLibrary* materialLibrary)
   ImGui::SetNextWindowSize(ImVec2(430, 450), ImGuiCond_FirstUseEver);
   if(ImGui::Begin("Materials", &open))
   {
-    DrawMaterial(materialLibrary->GetDefault());
+    for(auto range = materialLibrary->Values(); !range.Empty(); range.PopFront())
+      DrawMaterial(range.Front());
   }
   ImGui::End();
 }

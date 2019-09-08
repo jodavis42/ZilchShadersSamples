@@ -38,7 +38,11 @@ Resource* BaseResourceLibrary::GetDefaultInternal()
 {
   if(mResourceMap.Empty())
     return nullptr;
-  return mResourceMap.All().Front().second;
+
+  Resource* result = mResourceMap.FindValue(mDefaultName, nullptr);
+  if(result == nullptr)
+    result = mResourceMap.All().Front().second;
+  return result;
 }
 
 }//namespace Graphics

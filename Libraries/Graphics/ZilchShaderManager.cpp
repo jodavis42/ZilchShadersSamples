@@ -13,7 +13,8 @@ using ShaderResourceReflectionData = Zero::ShaderResourceReflectionData;
 
 void ZilchCompilerErrorCallback2(Zilch::ErrorEvent* e)
 {
-  ZPrint("%s", e->GetFormattedMessage(Zilch::MessageFormat::MsvcCpp).c_str());
+  String msg = e->GetFormattedMessage(Zilch::MessageFormat::MsvcCpp);
+  ZPrint("%s", msg.c_str());
   ZeroDebugBreak();
 }
 
@@ -141,7 +142,10 @@ void ZilchShaderManager::CreateMaterialZilchShader(MaterialCreationData& materia
 
   // Create the shader composition for this material
   Zero::ShaderCapabilities capabilities;
-  mGenerator->ComposeShader(shaderDef, capabilities);
+  if(materialCreationData.mMaterialName.Contains("Compute"))
+    mGenerator->ComposeComputeShader(shaderDef, capabilities);
+  else
+    mGenerator->ComposeShader(shaderDef, capabilities);
 
   // Add all of the composited shader stages together into the shader library.
   for(size_t i = 0; i < Zero::FragmentType::Size; ++i)
@@ -234,6 +238,7 @@ void ZilchShaderManager::CreateMaterialBlockTemplate(MaterialBlock* block, Zilch
     
     // Create a material property depending on the type of the property
     MaterialProperty* materialProp = nullptr;
+    Zero::ZilchShaderIRRuntimeArrayType runtimeArrayType;
     if(propertyType->mBaseType == Zero::ShaderIRTypeBaseType::SampledImage)
     {
       MaterialTextureProperty* textureProp = new MaterialTextureProperty();
@@ -241,6 +246,14 @@ void ZilchShaderManager::CreateMaterialBlockTemplate(MaterialBlock* block, Zilch
       textureProp->mResourceName = mTextureLibrary->GetDefault()->mName;
       textureProp->mLibrary = mTextureLibrary;
       materialProp = textureProp;
+    }
+    else if(runtimeArrayType.Load(propertyType))
+    {
+      MaterialSsboProperty* ssboProp = new MaterialSsboProperty();
+      // @JoshD: No good way to set texture defaults now (can't do it by string, have to inject types into zilch).
+      //ssboProp->m = mTextureLibrary->GetDefault()->mName;
+      //ssboProp->mLibrary = mTextureLibrary;
+      materialProp = ssboProp;
     }
     else
     {
@@ -358,6 +371,18 @@ void ZilchShaderManager::ExtractMaterialBlockReflection(ShaderReflectionData* re
       materialProp->mBindingData[i].mReflectionData = *reflectionResults[i];
     }
   }
+  for(auto ssboRange = fragmentLookup->mStructedStorageBuffers.All(); !ssboRange.Empty(); ssboRange.PopFront())
+  {
+    String propName = ssboRange.Front().first;
+    Zero::ShaderIRFieldMeta* fieldMeta = fragmentType->mMeta->FindField(propName);
+
+    // Copy out the field's reflection data
+    ShaderResourceReflectionData* fieldReflectionData = reflectionData->FindStructedStorageBuffer(fragmentType, propName);
+    MaterialSsboProperty* ssboProp = (MaterialSsboProperty*)block->FindProperty(propName);
+    ssboProp->mValidReflectionObject = true;
+    ssboProp->mFragmentType = fragmentType->mMeta->mFragmentType;
+    ssboProp->mBindingData.mReflectionData = *fieldReflectionData;
+  }
 }
 
 ZilchShaderSpirVSettings* ZilchShaderManager::CreateZilchShaderSettings(SpirVNameSettings& nameSettings)
@@ -397,7 +422,7 @@ ZilchShaderSpirVSettings* ZilchShaderManager::CreateZilchShaderSettings(SpirVNam
 
   settings->AutoSetDefaultUniformBufferDescription();
 
-  //// Add some default vertex definitions (glsl attributes)
+  // Add some default vertex definitions (glsl attributes)
   settings->mVertexDefinitions.AddField(realType, "Scalar");
   settings->mVertexDefinitions.AddField(real2Type, "Uv");
   settings->mVertexDefinitions.AddField(real3Type, "LocalNormal");

@@ -1,0 +1,37 @@
+[UnitTest][Vertex]
+struct ParticleVertex
+{
+  [Input] var VertexId : Integer;
+  [Input] var WorldToView : Real4x4;
+  [Input] var ViewToPerspective : Real4x4;
+  [Output] var ViewPosition : Real3;
+  [Input][Output] var Uv : Real2;
+  [HardwareBuiltInOutput] var ApiPerspectivePosition : Real4;
+  
+  [Input] var Array : RuntimeArray[ParticleData];
+  
+  var LocalToWorld : Real4x4 = Real4x4(1, 0, 0, 0,  0, 1, 0, 0,  0, 0, 1, 0,  0, 0, 0, 1);
+  
+  function Main()
+  {
+    var localToView = Math.Multiply(this.WorldToView, this.LocalToWorld);
+
+    var localPosition = this.Array[this.VertexId].Position;
+    var viewPosition = Math.Multiply(localToView, localPosition);//localPosition;//Real4(0.5, 0, 0, 1);
+    this.ApiPerspectivePosition = Math.Multiply(this.ViewToPerspective, viewPosition);
+    this.ViewPosition = viewPosition.XYZ;
+  }
+}
+
+[UnitTest][Pixel]
+struct ParticlePixel
+{
+  [PropertyInput] var Texture : SampledImage2d;
+  [StageInput] var Uv : Real2;
+  [StageOutput] var Target0 : Real4;
+  function Main()
+  {
+    this.Target0 = this.Texture.Sample(this.Uv);
+    this.Target0 = Real4(1);
+  }
+}

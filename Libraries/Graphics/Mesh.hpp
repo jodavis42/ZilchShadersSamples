@@ -47,6 +47,7 @@ public:
   typedef Array<size_t> Indices;
   Indices mIndices;
 
+  size_t mIndexCount;
   MeshElementType::Enum mElementType;
   int mPatchSize;
   String mName;
