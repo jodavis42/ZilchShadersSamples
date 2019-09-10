@@ -19,4 +19,9 @@ target_sources(Framework
     ${CMAKE_CURRENT_LIST_DIR}/ObjReader.hpp
     ${CMAKE_CURRENT_LIST_DIR}/Properties.cpp
     ${CMAKE_CURRENT_LIST_DIR}/Properties.hpp
+
+    ${CMAKE_CURRENT_LIST_DIR}/Serializer.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/Serializer.hpp
+    ${CMAKE_CURRENT_LIST_DIR}/JsonSerializer.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/JsonSerializer.hpp
 )
