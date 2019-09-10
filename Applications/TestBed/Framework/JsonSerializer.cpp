@@ -105,6 +105,16 @@ void JsonSerializer::SerializeValue(Vector4& value)
   SerializeStaticArrayValue<Vector4, 4>(value);
 }
 
+void JsonSerializer::SerializeValue(Quaternion& value)
+{
+  SerializeStaticArrayValue<Quaternion, 4>(value);
+}
+
+void JsonSerializer::SerializeValue(IntVec3& value)
+{
+  SerializeStaticArrayValue<IntVec3, 3>(value);
+}
+
 JsonSerializer::JsonValue* JsonSerializer::GetCurrent()
 {
   return mStack.Back();

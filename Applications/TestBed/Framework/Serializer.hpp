@@ -5,6 +5,9 @@
 
 #include "FrameworkStandard.hpp"
 
+using Math::IntVec3;
+using Math::Quaternion;
+
 //-------------------------------------------------------------------Serializer
 class Serializer
 {
@@ -26,6 +29,8 @@ public:
   void SerializeField(const String& name, Vector2& value) { if(BeginArray(name)) { SerializeValue(value); End(); } }
   void SerializeField(const String& name, Vector3& value) { if(BeginArray(name)) { SerializeValue(value); End(); } }
   void SerializeField(const String& name, Vector4& value) { if(BeginArray(name)) { SerializeValue(value); End(); } }
+  void SerializeField(const String& name, Quaternion& value) { if(BeginArray(name)) { SerializeValue(value); End(); } }
+  void SerializeField(const String& name, IntVec3& value) { if(BeginArray(name)) { SerializeValue(value); End(); } }
 
   template <typename EnumType, typename EnumValueType = EnumType::Enum>
   void SerializeEnumField(const String& name, EnumValueType& value) { if(BeginField(name)) { SerializeEnumValue<EnumType, EnumValueType>(value); End(); } }
@@ -48,6 +53,8 @@ public:
   virtual void SerializeValue(Vector2& value) abstract;
   virtual void SerializeValue(Vector3& value) abstract;
   virtual void SerializeValue(Vector4& value) abstract;
+  virtual void SerializeValue(Quaternion& value) abstract;
+  virtual void SerializeValue(IntVec3& value) abstract;
 
   template <typename EnumType, typename EnumValueType = EnumType::Enum>
   void SerializeEnumValue(EnumValueType& value)

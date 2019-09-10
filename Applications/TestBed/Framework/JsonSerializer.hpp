@@ -26,6 +26,8 @@ public:
   virtual void SerializeValue(Vector2& value) override;
   virtual void SerializeValue(Vector3& value) override;
   virtual void SerializeValue(Vector4& value) override;
+  virtual void SerializeValue(Quaternion& value) override;
+  virtual void SerializeValue(IntVec3& value) override;
 
   void Read(bool& value);
   void Read(int& value);
