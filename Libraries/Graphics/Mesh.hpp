@@ -16,8 +16,11 @@ struct MeshElementType
   {
     Points,
     Lines,
-    Triangles
+    Triangles,
+    Count
   };
+
+  static Enum FromString(const String& enumName);
 };
 
 //-------------------------------------------------------------------Vertex

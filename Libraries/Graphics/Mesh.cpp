@@ -8,6 +8,18 @@
 namespace Graphics
 {
 
+//-------------------------------------------------------------------MeshElementType
+MeshElementType::Enum MeshElementType::FromString(const String& enumName)
+{
+  if(enumName == "Points")
+    return MeshElementType::Points;
+  if(enumName == "Lines")
+    return MeshElementType::Lines;
+  if(enumName == "Triangles")
+    return MeshElementType::Triangles;
+  return MeshElementType::Count;
+}
+
 //-------------------------------------------------------------------Vertex
 Vertex::Vertex()
 {
