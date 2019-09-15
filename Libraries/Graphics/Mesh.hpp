@@ -4,7 +4,7 @@
 #pragma once
 
 #include "GraphicsStandard.hpp"
-#include "ResourceLibrary.hpp"
+#include "Resource.hpp"
 
 namespace Graphics
 {
@@ -14,13 +14,17 @@ struct MeshElementType
 {
   enum Enum
   {
+    None,
     Points,
     Lines,
     Triangles,
     Count
   };
 
+  DeclareEnumType(MeshElementType);
+
   static Enum FromString(const String& enumName);
+  static String ToString(Enum enumValue);
 };
 
 //-------------------------------------------------------------------Vertex
@@ -40,10 +44,12 @@ struct Vertex
 };
 
 //-------------------------------------------------------------------Mesh
-class Mesh : public Resource
+class Mesh : public Engine::Resource
 {
 public:
   Mesh();
+
+  void Serialize(Serializer& serializer) override;
 
   typedef Array<Vertex> Vertices;
   Vertices mVertices;
@@ -51,15 +57,15 @@ public:
   Indices mIndices;
 
   size_t mIndexCount;
-  MeshElementType::Enum mElementType;
+  MeshElementType mElementType;
   int mPatchSize;
-  String mName;
 };
 
 //-------------------------------------------------------------------MeshLibrary
-class MeshLibrary : public ResourceLibrary<Mesh>
+class MeshLibrary : public Engine::ResourceLibrary<Mesh>
 {
 public:
+  DeclareResourceLibraryType(MeshLibrary);
 };
 
 }//namespace Graphics

@@ -57,8 +57,8 @@ public:
   void UnBindInternal(GlShaderData* glShader, ObjectData& objData);
   void DestroyTemporaryBindingsInternal(GlShaderData* glShader, ObjectData& objData);
   void BindTextureInternal(TextureData* textureData, GlTextureData* glTexture);
-  void BindInternal(GlBufferData* glBufferData, BufferRenderData* renderData);
-  void UnBindInternal(GlBufferData* glBufferData, BufferRenderData* renderData);
+  void BindInternal(GlBufferData* glData, BufferRenderData* renderData);
+  void UnBindInternal(GlBufferData* glData, BufferRenderData* renderData);
 
   int GetElementType(MeshElementType::Enum elementType);
   int GetTextureType(TextureType::Enum type);

@@ -9,6 +9,8 @@
 #include "String/String.hpp"
 #include "Zilch.hpp"
 
+#include "EngineStandard.hpp"
 #include "GraphicsStandard.hpp"
 
 using namespace Graphics;
+using namespace Engine;

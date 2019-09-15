@@ -1,0 +1,12 @@
+{
+  "Name": "Default",
+  "MaterialBlocks": [
+    {
+      "Name": "Vertex",
+    },
+    {
+      "Name": "Pixel",
+      "Frequency" :  0,
+    }
+  ],
+}

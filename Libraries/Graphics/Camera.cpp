@@ -1,17 +1,20 @@
 ///////////////////////////////////////////////////////////////////////////////
-///
 /// Authors: Joshua Davis
-/// Copyright 2015, DigiPen Institute of Technology
-///
 ///////////////////////////////////////////////////////////////////////////////
-//#include "Precompiled.hpp"
+#include "Precompiled.hpp"
+
 #include "Camera.hpp"
 
 #include "Math/Math.hpp"
 #include "Mouse.hpp"
 #include "Keyboard.hpp"
-//#include "SimplePropertyBinding.hpp"
 
+namespace Graphics
+{
+
+using namespace Engine;
+
+//-------------------------------------------------------------------Camera
 Camera::Camera()
 {
   mTarget = Vector3::cZero;
@@ -23,7 +26,7 @@ Camera::Camera()
   mLastX = mLastY = 0;
   mMode = Orbit;
 
-  for(int i = 0;  i < NumKeys; ++i)
+  for(int i = 0; i < NumKeys; ++i)
     mKeyStates[i] = false;
 }
 
@@ -110,7 +113,7 @@ void Camera::SetMatrix()
     SetMatrixOrbit();
   else
     SetMatrixFps();
-  
+
   Matrix4 perspective;
   float fov = Math::DegToRad(45);
   BuildPerspectiveTransformGl(perspective, fov, mAspectRatio, mNearPlane, mFarPlane);
@@ -120,7 +123,7 @@ void Camera::SetMatrix()
 void Camera::SetMatrixOrbit()
 {
   Vector3 worldUp = Vector3(0, 1, 0);
-  
+
   Vector3 cameraDir;
   cameraDir.x = mRadius * Math::Cos(mTheta) * Math::Sin(mPhi);
   cameraDir.y = mRadius * Math::Cos(mPhi);
@@ -129,7 +132,7 @@ void Camera::SetMatrixOrbit()
   // Since we're looking at our target, the forward vector is just the
   // opposite of our position vector on the unit sphere
   Vector3 forward = -cameraDir;
-  
+
   // Compute the forward and right vector of the camera in world space
   Vector3 movementForward = forward;
   movementForward.y = 0;
@@ -188,7 +191,7 @@ void Camera::SetMatrixFps()
   cameraDir.x = mRadius * Math::Cos(mTheta) * Math::Sin(mPhi);
   cameraDir.y = mRadius * Math::Cos(mPhi);
   cameraDir.z = mRadius * Math::Sin(mTheta) * Math::Sin(mPhi);
-  
+
   Vector3 forward = cameraDir;
   forward = Math::Normalized(forward);
 
@@ -307,3 +310,5 @@ void Camera::ProcessKeyUp(unsigned int key, int x, int y)
   if(key == Keys::E)
     mKeyStates[PanGlobalUp] = false;
 }
+
+}//namespace Graphics

@@ -6,8 +6,28 @@
 #include "Material.hpp"
 #include "ShaderProperties.hpp"
 
+#include "Serializer.hpp"
+
 namespace Graphics
 {
+
+//-------------------------------------------------------------------MaterialCreationData
+void MaterialCreationData::Serialize(Serializer& serializer)
+{
+  serializer.SerializeField(mName);
+  size_t blockCount = serializer.BeginArray("MaterialBlocks");
+  if(blockCount != 0)
+  {
+    for(size_t i = 0; i < blockCount; ++i)
+    {
+      serializer.BeginArrayItem(i);
+      String& fragmentName = mFragmentNames.PushBack();
+      serializer.SerializeNamedField("Name", fragmentName);
+      serializer.End();
+    }
+    serializer.End();
+  }
+}
 
 //-------------------------------------------------------------------MaterialBlock
 MaterialBlock::~MaterialBlock()

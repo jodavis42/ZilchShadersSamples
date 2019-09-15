@@ -1,0 +1,11 @@
+{
+  "Name": "Points",
+  "ElementType": "Points",
+  "Vertices": [
+    {
+      "Position": [ -1.0, -1.0, -1.0 ],
+      "Uv": [ 0, 0 ]
+    },
+  ],
+  "IndexCount": 100,
+}

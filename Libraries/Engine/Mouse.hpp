@@ -1,6 +1,12 @@
+///////////////////////////////////////////////////////////////////////////////
+/// Authors: Joshua Davis
+///////////////////////////////////////////////////////////////////////////////
 #pragma once
 
-#include "FrameworkStandard.hpp"
+#include "EngineStandard.hpp"
+
+namespace Engine
+{
 
 namespace MouseButtons { enum Enum { Left, Middle, Right, Count }; };
 namespace MouseButtonStates {enum Enum { Down, Up };};
@@ -50,3 +56,5 @@ public:
   Vector2 mMovement;
   Vector2 mScroll;
 };
+
+}//namespace Engine

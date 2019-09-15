@@ -3,16 +3,22 @@
 ///////////////////////////////////////////////////////////////////////////////
 #pragma once
 
-#include "GraphicsStandard.hpp"
+#include "EngineStandard.hpp"
 
-namespace Graphics
+namespace Engine
 {
+
+class Serializer;
 
 //-------------------------------------------------------------------Resource
 class Resource
 {
 public:
   virtual ~Resource() {};
+
+  virtual void Serialize(Serializer& serializer);
+
+  String mName;
 };
 
 //-------------------------------------------------------------------BaseResourceLibrary
@@ -23,10 +29,12 @@ public:
   virtual ~BaseResourceLibrary();
   virtual void Destroy();
 
+  virtual String VirtualGetLibraryName();
 protected:
   virtual void AddInternal(const String& resourceName, Resource* resource);
   virtual Resource* FindInternal(const String& resourceName);
   virtual Resource* GetDefaultInternal();
+  virtual void SerializeResourceInternal(Serializer& serializer, Resource* resource);
 
   // Base range to iterate the resource map. It's expected to derive from this to define Front().
   struct BaseRange
@@ -42,14 +50,23 @@ protected:
 public:
   String mDefaultName;
   ResourceMap mResourceMap;
+  String mLibraryName;
 };
 
 //-------------------------------------------------------------------ResourceLibrary
-template <typename ResourceType>
+template <typename TemplateResourceType>
 class ResourceLibrary : public BaseResourceLibrary
 {
 public:
+  typedef TemplateResourceType ResourceType;
   virtual void Add(const String& resourceName, ResourceType* resource) { AddInternal(resourceName, resource); }
+  virtual ResourceType* SerializeResource(Serializer& serializer)
+  {
+    ResourceType* resource = new ResourceType();
+    SerializeResourceInternal(serializer, resource);
+    Add(resource->mName, resource);
+    return resource;
+  }
   virtual ResourceType* Find(const String& resourceName) { return (ResourceType*)FindInternal(resourceName); }
   virtual ResourceType* GetDefault() { return (ResourceType*)GetDefaultInternal(); }
 
@@ -70,4 +87,8 @@ public:
   ValueRange Values() { return ValueRange(mResourceMap.All()); }
 };
 
-}//namespace Graphics
+#define DeclareResourceLibraryType(ResourceLibraryType)              \
+  static const char* StaticGetName() {return #ResourceLibraryType; } \
+  String VirtualGetLibraryName() override { return #ResourceLibraryType; }
+
+}//namespace Engine

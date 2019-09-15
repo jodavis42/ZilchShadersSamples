@@ -6,7 +6,7 @@
 #include "GraphicsStandard.hpp"
 
 #include "ShaderProperties.hpp"
-#include "ResourceLibrary.hpp"
+#include "Resource.hpp"
 
 namespace Graphics
 {
@@ -40,7 +40,7 @@ public:
 class MaterialResourceProperty : public MaterialProperty
 {
 public:
-  BaseResourceLibrary* mLibrary;
+  Engine::BaseResourceLibrary* mLibrary;
   String mResourceName;
 };
 

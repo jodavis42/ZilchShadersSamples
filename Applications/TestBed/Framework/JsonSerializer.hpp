@@ -1,10 +1,12 @@
 ///////////////////////////////////////////////////////////////////////////////
 /// Authors: Joshua Davis
 ///////////////////////////////////////////////////////////////////////////////
+#include "FrameworkStandard.hpp"
+
 #include "Serializer.hpp"
 
 //-------------------------------------------------------------------JsonSerializer
-class JsonSerializer : public Serializer
+class JsonSerializer : public Engine::Serializer
 {
 public:
   using JsonValue = Zilch::JsonValue;
@@ -12,22 +14,25 @@ public:
   JsonSerializer();
   ~JsonSerializer();
 
-  virtual bool Load(const String& filePath) override;
-  virtual bool BeginObject(const String& name) override;
-  virtual size_t BeginArray(const String& name) override;
-  virtual bool BeginArrayItem(size_t index) override;
-  virtual bool BeginField(const String& name) override;
-  virtual void End() override;
+  bool Load(const String& filePath) override;
+  bool BeginObject(const String& name) override;
+  size_t BeginArray(const String& name) override;
+  bool BeginArrayItem(size_t index) override;
+  bool BeginField(const String& name) override;
+  void End() override;
 
-  virtual void SerializeValue(String& value) override;
-  virtual void SerializeValue(bool& value) override;
-  virtual void SerializeValue(int& value) override;
-  virtual void SerializeValue(float& value) override;
-  virtual void SerializeValue(Vector2& value) override;
-  virtual void SerializeValue(Vector3& value) override;
-  virtual void SerializeValue(Vector4& value) override;
-  virtual void SerializeValue(Quaternion& value) override;
-  virtual void SerializeValue(IntVec3& value) override;
+  void SerializeValue(bool& value) override;
+  void SerializeValue(int& value) override;
+  void SerializeValue(size_t& value) override;
+  void SerializeValue(float& value) override;
+  void SerializeValue(Vector2& value) override;
+  void SerializeValue(Vector3& value) override;
+  void SerializeValue(Vector4& value) override;
+  void SerializeValue(Quaternion& value) override;
+  void SerializeValue(Integer2& value) override;
+  void SerializeValue(Integer3& value) override;
+  void SerializeValue(Integer4& value) override;
+  void SerializeValue(String& value) override;
 
   void Read(bool& value);
   void Read(int& value);

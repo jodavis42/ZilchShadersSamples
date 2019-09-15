@@ -241,8 +241,10 @@ int main(int argc, char *argv[])
   //SDL_DestroyWindow(window);
   //SDL_Quit();
 
+  float ratio = 16.0f / 9.0f;
+
   SdlApp app;
-  app.Init();
+  app.Init((int)1000 * ratio, 1000);
   app.Run();
   app.Shutdown();
 

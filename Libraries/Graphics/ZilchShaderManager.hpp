@@ -8,7 +8,7 @@
 #include "Renderer.hpp"
 #include "Shader.hpp"
 #include "Material.hpp"
-#include "Texture.hpp"
+#include "ResourceSystem.hpp"
 
 namespace Graphics
 {
@@ -25,6 +25,7 @@ using ShaderIRFieldMeta = Zero::ShaderIRFieldMeta;
 using SpirVNameSettings = Zero::SpirVNameSettings;
 using ZilchShaderSpirVSettings = Zero::ZilchShaderSpirVSettings;
 using ShaderStageDescription = Zero::ZilchShaderIRCompositor::ShaderStageDescription;
+class TextureLibrary;
 
 //-------------------------------------------------------------------ZilchShaderGlslBackend
 /// Manages the creation of shaders and materials from zilch. Fragments are compiled to
@@ -39,25 +40,26 @@ public:
   ZilchShaderManager();
   ~ZilchShaderManager();
 
-  void Initialize(TextureLibrary* textureLibrary, MaterialLibrary* materialLibrary, ShaderLibrary* shaderLibrary, ZilchShaderIRBackend* backend, const String& shaderDependenciesDir);
+  void Initialize(ResourceSystem* resourceSystem, ZilchShaderIRBackend* backend, const String& shaderDependenciesDir);
 
   /// Adds a material definition that will be used when creating shaders.
   void AddMaterialDefinition(MaterialCreationData& materialCreationData);
   void ClearMaterialDefinitions();
 
-  /// Adds a directory to load shader fragments from.
-  void AddShaderFragmentProjectDirectory(const String& shaderProjectDir);
-  void ClearShaderFragmentProjects();
+  /// Adds a file to load fragments from.
+  void AddFragmentFile(const String& shaderProjectDir);
+  void ClearShaderFragmentFiles();
   
   /// Create all shaders and materials from the given fragment libraries and material definitions.
   void CreateShadersAndMaterials(Renderer* renderer);
   void ClearShadersAndMaterials(Renderer* renderer);
 
-  void ClearAll();
+  void ClearAll(Renderer* renderer);
 
   TextureLibrary* mTextureLibrary;
   MaterialLibrary* mMaterialLibrary;
   ShaderLibrary* mShaderLibrary;
+  ResourceSystem* mResourceSystem;
   ZilchShaderIRGenerator* mGenerator;
   Zilch::Ref<ShaderPipelineDescription> mPipeline;
 
@@ -92,7 +94,7 @@ private:
   ZilchShaderSpirVSettings* CreateZilchShaderSettings(Zero::SpirVNameSettings& nameSettings);
 
   String mDependencyDir;
-  Array<String> mShaderProjects;
+  Array<String> mFragmentFiles;
 
   Array<MaterialCreationData> mMaterialDefinitions;
 };

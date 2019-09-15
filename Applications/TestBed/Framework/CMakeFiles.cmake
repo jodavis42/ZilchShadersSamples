@@ -8,14 +8,10 @@ target_sources(Framework
     ${CMAKE_CURRENT_LIST_DIR}/ImGuiHelper.hpp
     ${CMAKE_CURRENT_LIST_DIR}/Application.cpp
     ${CMAKE_CURRENT_LIST_DIR}/Application.hpp
-    ${CMAKE_CURRENT_LIST_DIR}/Mouse.cpp
-    ${CMAKE_CURRENT_LIST_DIR}/Mouse.hpp
-    ${CMAKE_CURRENT_LIST_DIR}/Keyboard.cpp
-    ${CMAKE_CURRENT_LIST_DIR}/Keyboard.hpp
-    ${CMAKE_CURRENT_LIST_DIR}/Camera.cpp
-    ${CMAKE_CURRENT_LIST_DIR}/Camera.hpp
-    ${CMAKE_CURRENT_LIST_DIR}/Serializer.cpp
-    ${CMAKE_CURRENT_LIST_DIR}/Serializer.hpp
     ${CMAKE_CURRENT_LIST_DIR}/JsonSerializer.cpp
     ${CMAKE_CURRENT_LIST_DIR}/JsonSerializer.hpp
+    ${CMAKE_CURRENT_LIST_DIR}/Project.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/Project.hpp
+    ${CMAKE_CURRENT_LIST_DIR}/Level.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/Level.hpp
 )

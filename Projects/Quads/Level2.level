@@ -1,0 +1,29 @@
+{
+  "Name": "Level2",
+  "Objects": [
+    {
+      "Name": "Quad1",
+      "Transform": {
+        "Scale": [ 1, 2, 1 ],
+        "Rotation": [ 0, 0, 0, 1 ],
+        "Translation": [ -1, 0, 0 ],
+      },
+      "Model": {
+        "Material": "Default",
+        "Mesh": "Quad",
+      },
+    },
+    {
+      "Name": "Quad2",
+      "Transform": {
+        "Scale": [ 1, 1, 1 ],
+        "Rotation": [ 0, 0, 0, 1 ],
+        "Translation": [ 3, 2, 0 ],
+      },
+      "Model": {
+        "Material": "Default",
+        "Mesh": "Quad",
+      },
+    },
+  ],
+}

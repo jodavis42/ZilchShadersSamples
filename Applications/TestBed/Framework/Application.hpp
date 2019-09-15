@@ -1,6 +1,12 @@
 #pragma once
 
 #include "FrameworkStandard.hpp"
+#include "Engine/Component.hpp"
+#include "Engine/Composition.hpp"
+#include "Engine/Cog.hpp"
+#include "Engine/Space.hpp"
+#include "Engine/Transform.hpp"
+#include "Engine/ResourceSystem.hpp"
 #include "Renderer.hpp"
 #include "Mesh.hpp"
 #include "Texture.hpp"
@@ -8,9 +14,16 @@
 #include "Shader.hpp"
 #include "Material.hpp"
 #include "Model.hpp"
+#include "Level.hpp"
+#include "Project.hpp"
 #include "ZilchShaderManager.hpp"
 #include "AppBuiltInTypes.hpp"
 #include "ImGuiHelper.hpp"
+
+using Engine::Transform;
+using Engine::Component;
+using Engine::Cog;
+using Engine::Space;
 
 //-------------------------------------------------------------------Application
 class Application
@@ -20,19 +33,23 @@ public:
   ~Application();
 
   void Initialize();
-  void InitializeMeshes();
   void InitializeTextures();
-  void InitializeShadersAndMaterials();
-  void InitializeBuffers();
-  void InitializeModels();
+
+  void LoadProjects();
+  void LoadProject(Project* project);
+  void DestroyProject();
+  void LoadLevel(const String& filePath);
+  void LoadLevel(Level* level);
+  void DestroyLevel();
+  void LoadMesh(const String& filePath);
+  void LoadMaterial(const String& filePath);
+  void LoadZilchFragment(const String& filePath);
 
   void Update(float frameTime);
   // Reshape our projection matrix since the window size changed
   void Reshape(int width, int height, float aspectRatio);
 
   void Draw();
-  void DrawCompute(TransformBufferData& transformData);
-  void Draw(Model* model, TransformBufferData& transformData);
 
   void OnKeyDown(unsigned int key);
   void OnKeyUp(unsigned int key);
@@ -40,20 +57,15 @@ public:
   void OnMouseMove(int x, int y);
   void OnMouseScroll(int x, int y);
 
-  FrameBufferData mFrameData;
-  CameraBufferData mCameraData;
-
-  BufferRenderData mFrameDataBufferData;
-  BufferRenderData mCameraDataBufferData;
-  BufferRenderData mParticlesSsboBufferData;
-
   Renderer* mRenderer;
   Camera* mCamera;
-  MeshLibrary* mMeshLibrary;
-  MaterialLibrary* mMaterialLibrary;
-  TextureLibrary* mTextureLibrary;
-  ShaderLibrary* mShaderLibrary;
+  Space* mSpace;
+
+  Project* mCurrentProject;
+  Level* mCurrentLevel;
+
+  ResourceSystem* mResourceSystem;
+
   ZilchShaderManager* mZilchShaderManager;
-  Array<Model*> mModels;
   ImGuiHelper* mImGui;
 };

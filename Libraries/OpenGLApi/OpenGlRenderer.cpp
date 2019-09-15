@@ -196,6 +196,7 @@ void OpenGlRenderer::CreateMesh(Mesh* mesh)
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
   mGlMeshMap[mesh] = glMesh;
+  PrintOpenGLErrors();
 }
 
 void OpenGlRenderer::DestroyMesh(Mesh* mesh)
@@ -208,6 +209,7 @@ void OpenGlRenderer::DestroyMesh(Mesh* mesh)
   glDeleteVertexArrays(1, &glMesh->mVertexArray);
 
   delete glMesh;
+  PrintOpenGLErrors();
 }
 
 void OpenGlRenderer::CreateTexture(Texture* texture)
@@ -233,6 +235,7 @@ void OpenGlRenderer::CreateTexture(Texture* texture)
   glBindTexture(textureType, 0);
 
   mTextureMap[texture] = glTexture;
+  PrintOpenGLErrors();
 }
 
 void OpenGlRenderer::DestroyTexture(Texture* texture)
@@ -240,6 +243,7 @@ void OpenGlRenderer::DestroyTexture(Texture* texture)
   GlTextureData* glTexture = mTextureMap[texture];
   mTextureMap.Erase(texture);
   delete glTexture;
+  PrintOpenGLErrors();
 }
 
 void OpenGlRenderer::CreateShader(Shader* shader)
@@ -265,6 +269,7 @@ void OpenGlRenderer::CreateShader(Shader* shader)
     LinkInternal(ids, glShader->mProgramId);
   }
   mShaderMap[shader] = glShader;
+  PrintOpenGLErrors();
 }
 
 void OpenGlRenderer::DestroyShader(Shader* shader)
@@ -277,6 +282,7 @@ void OpenGlRenderer::DestroyShader(Shader* shader)
   glDeleteShader(glShader->mVertexShaderId);
 
   delete glShader;
+  PrintOpenGLErrors();
 }
 
 BufferRenderData OpenGlRenderer::CreateBuffer(BufferCreationData& creationData, BufferType::Enum bufferType)
@@ -310,11 +316,11 @@ void OpenGlRenderer::UploadBuffer(BufferRenderData& renderData, ByteBuffer& data
   glBindBuffer(glBuffer->mBufferType, glBuffer->mBufferId);
   glBufferData(glBuffer->mBufferType, data.Size(), data.Data(), glBuffer->mUsage);
   glBindBuffer(glBuffer->mBufferType, 0);
+  PrintOpenGLErrors();
 }
 
 void* OpenGlRenderer::MapBuffer(BufferRenderData& renderData, size_t offset, size_t sizeInBytes, BufferMappingType::Enum mappingTypes)
 {
-  PrintOpenGLErrors();
   int access = 0;
   if(mappingTypes & BufferMappingType::Read)
     access |= GL_MAP_READ_BIT;
@@ -329,7 +335,10 @@ void* OpenGlRenderer::MapBuffer(BufferRenderData& renderData, size_t offset, siz
   glBindBuffer(glBuffer->mBufferType, glBuffer->mBufferId);
   if(mappingTypes != BufferMappingType::Read)
     glBufferData(glBuffer->mBufferType, sizeInBytes, NULL, glBuffer->mUsage);
-  return glMapBufferRange(glBuffer->mBufferType, offset, sizeInBytes, access);
+  
+  void* result = glMapBufferRange(glBuffer->mBufferType, offset, sizeInBytes, access);
+  PrintOpenGLErrors();
+  return result;
 }
 
 void OpenGlRenderer::UnMapBuffer(BufferRenderData& renderData)
@@ -337,6 +346,7 @@ void OpenGlRenderer::UnMapBuffer(BufferRenderData& renderData)
   GlBufferData* glBuffer = (GlBufferData*)renderData.mKey.mKey;
   glUnmapBuffer(glBuffer->mBufferType);
   glBindBuffer(glBuffer->mBufferType, 0);
+  PrintOpenGLErrors();
 }
 
 void OpenGlRenderer::DestroyBuffer(BufferRenderData& renderData)
@@ -345,11 +355,13 @@ void OpenGlRenderer::DestroyBuffer(BufferRenderData& renderData)
   GLuint id = glBuffer->mBufferId;
   glDeleteBuffers(1, &id);
   delete glBuffer;
+  PrintOpenGLErrors();
 }
 
 void OpenGlRenderer::ClearTarget()
 {
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+  PrintOpenGLErrors();
 }
 
 void OpenGlRenderer::Draw(ObjectData& objData)
@@ -387,11 +399,13 @@ void OpenGlRenderer::DispatchCompute(ObjectData& objData, int x, int y, int z)
 
   glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT | GL_BUFFER_UPDATE_BARRIER_BIT);
   glUseProgram(0);
+  PrintOpenGLErrors();
 }
 
 void OpenGlRenderer::Reshape(int width, int height, float aspectRatio)
 {
   glViewport(0, 0, width, height);
+  PrintOpenGLErrors();
 }
 
 Matrix4 OpenGlRenderer::BuildPerspectiveMatrix(float verticalFov, float aspectRatio, float nearDistance, float farDistance)
@@ -580,14 +594,14 @@ void OpenGlRenderer::BindTextureInternal(TextureData* textureData, GlTextureData
   glBindTexture(textureType, glTexture->mTextureId);
 }
 
-void OpenGlRenderer::BindInternal(GlBufferData* glBufferData, BufferRenderData* renderData)
+void OpenGlRenderer::BindInternal(GlBufferData* glData, BufferRenderData* renderData)
 {
-  glBindBufferBase(glBufferData->mBufferType, renderData->mBindingIndex, glBufferData->mBufferId);
+  glBindBufferBase(glData->mBufferType, renderData->mBindingIndex, glData->mBufferId);
 }
 
-void OpenGlRenderer::UnBindInternal(GlBufferData* glBufferData, BufferRenderData* renderData)
+void OpenGlRenderer::UnBindInternal(GlBufferData* glData, BufferRenderData* renderData)
 {
-  glBindBufferBase(glBufferData->mBufferType, renderData->mBindingIndex, 0);
+  glBindBufferBase(glData->mBufferType, renderData->mBindingIndex, 0);
 }
 
 int OpenGlRenderer::GetElementType(MeshElementType::Enum elementType)

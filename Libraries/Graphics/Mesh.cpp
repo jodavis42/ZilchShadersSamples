@@ -4,6 +4,7 @@
 #include "Precompiled.hpp"
 
 #include "Mesh.hpp"
+#include "Serializer.hpp"
 
 namespace Graphics
 {
@@ -17,7 +18,18 @@ MeshElementType::Enum MeshElementType::FromString(const String& enumName)
     return MeshElementType::Lines;
   if(enumName == "Triangles")
     return MeshElementType::Triangles;
-  return MeshElementType::Count;
+  return MeshElementType::None;
+}
+
+String MeshElementType::ToString(Enum enumValue)
+{
+  if(enumValue == Points)
+    return "Points";
+  if(enumValue == Lines)
+    return "Lines";
+  if(enumValue == Triangles)
+    return "Triangles";
+  return "None";
 }
 
 //-------------------------------------------------------------------Vertex
@@ -54,6 +66,42 @@ Mesh::Mesh()
 {
   mElementType = MeshElementType::Triangles;
   mIndexCount = 0;
+}
+
+void Mesh::Serialize(Serializer& serializer)
+{
+  __super::Serialize(serializer);
+  serializer.SerializeEnumField("ElementType", mElementType);
+  
+  size_t vertexCount = serializer.BeginArray("Vertices");
+  if(vertexCount != 0)
+  {
+    for(size_t i = 0; i < vertexCount; ++i)
+    {
+      Graphics::Vertex& vertex = mVertices.PushBack();
+      serializer.BeginArrayItem(i);
+      serializer.SerializeNamedField("Position", vertex.mPosition);
+      serializer.SerializeNamedField("Normal", vertex.mNormal);
+      serializer.SerializeNamedField("Uv", vertex.mUv);
+      serializer.SerializeNamedField("Color", vertex.mColor);
+      serializer.End();
+    }
+    serializer.End();
+  }
+  size_t indexCount = serializer.BeginArray("Indices");
+  if(indexCount != 0)
+  {
+    for(size_t i = 0; i < indexCount; ++i)
+    {
+      int index;
+      serializer.BeginArrayItem(i);
+      serializer.SerializeValue(index);
+      mIndices.PushBack(index);
+      serializer.End();
+    }
+    serializer.End();
+  }
+  serializer.SerializeField(mIndexCount);
 }
 
 }//namespace Graphics

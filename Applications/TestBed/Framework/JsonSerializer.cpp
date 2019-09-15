@@ -85,6 +85,13 @@ void JsonSerializer::SerializeValue(int& value)
   Read(value);
 }
 
+void JsonSerializer::SerializeValue(size_t& value)
+{
+  int intVal;
+  Read(intVal);
+  value = intVal;
+}
+
 void JsonSerializer::SerializeValue(float& value)
 {
   Read(value);
@@ -110,9 +117,19 @@ void JsonSerializer::SerializeValue(Quaternion& value)
   SerializeStaticArrayValue<Quaternion, 4>(value);
 }
 
-void JsonSerializer::SerializeValue(IntVec3& value)
+void JsonSerializer::SerializeValue(Integer2& value)
 {
-  SerializeStaticArrayValue<IntVec3, 3>(value);
+  SerializeStaticArrayValue<Integer2, 2>(value);
+}
+
+void JsonSerializer::SerializeValue(Integer3& value)
+{
+  SerializeStaticArrayValue<Integer3, 3>(value);
+}
+
+void JsonSerializer::SerializeValue(Integer4& value)
+{
+  SerializeStaticArrayValue<Integer4, 4>(value);
 }
 
 JsonSerializer::JsonValue* JsonSerializer::GetCurrent()

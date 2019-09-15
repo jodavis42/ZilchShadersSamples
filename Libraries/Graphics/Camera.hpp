@@ -1,13 +1,14 @@
 ///////////////////////////////////////////////////////////////////////////////
-///
 /// Authors: Joshua Davis
-/// Copyright 2015, DigiPen Institute of Technology
-///
 ///////////////////////////////////////////////////////////////////////////////
 #pragma once
 
-#include "FrameworkStandard.hpp"
+#include "GraphicsStandard.hpp"
 
+namespace Graphics
+{
+
+//-------------------------------------------------------------------Camera
 class Camera
 {
 public:
@@ -37,9 +38,9 @@ public:
   int mLastX;
   int mLastY;
 
-  enum Mode{Orbit, Fps};
+  enum Mode { Orbit, Fps };
   Mode mMode;
-  enum MovementDir{Left, Right, Down, Up, PanGlobalUp, PanGlobalDown, NumKeys};
+  enum MovementDir { Left, Right, Down, Up, PanGlobalUp, PanGlobalDown, NumKeys };
   bool mKeyStates[6];
 
   Vector3 mTarget;
@@ -51,3 +52,5 @@ public:
   Matrix4 mWorldToView;
   Matrix4 mViewToPerspective;
 };
+
+}//namespace Graphics

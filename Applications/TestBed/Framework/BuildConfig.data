@@ -1,4 +1,4 @@
 {
-  "ShaderCoreDir" : "${ShaderCoreDir}",
-  "TestShadersDir" : "${TestShadersDir}",
+  "ShaderCoreDir": "${ShaderCoreDir}",
+  "ProjectsDir": "${ProjectsDir}"
 }

@@ -1,6 +1,12 @@
+///////////////////////////////////////////////////////////////////////////////
+/// Authors: Joshua Davis
+///////////////////////////////////////////////////////////////////////////////
 #pragma once
 
-#include "FrameworkStandard.hpp"
+#include "EngineStandard.hpp"
+
+namespace Engine
+{
 
 class Keyboard;
 
@@ -115,3 +121,5 @@ public:
 
   KeyState mKeys[255];
 };
+
+}//namespace Engine

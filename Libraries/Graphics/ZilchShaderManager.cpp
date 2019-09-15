@@ -5,6 +5,9 @@
 
 #include "ZilchShaderManager.hpp"
 
+#include "Engine/ResourceSystem.hpp"
+#include "Texture.hpp"
+
 namespace Graphics
 {
 
@@ -36,11 +39,12 @@ ZilchShaderManager::~ZilchShaderManager()
 
 }
 
-void ZilchShaderManager::Initialize(TextureLibrary* textureLibrary, MaterialLibrary* materialLibrary, ShaderLibrary* shaderLibrary, ZilchShaderIRBackend* backend, const String& shaderDependenciesDir)
+void ZilchShaderManager::Initialize(ResourceSystem* resourceSystem, ZilchShaderIRBackend* backend, const String& shaderDependenciesDir)
 {
-  mTextureLibrary = textureLibrary;
-  mMaterialLibrary = materialLibrary;
-  mShaderLibrary = shaderLibrary;
+  mResourceSystem = resourceSystem;
+  mTextureLibrary = mResourceSystem->HasResourceLibrary(TextureLibrary);
+  mMaterialLibrary = mResourceSystem->HasResourceLibrary(MaterialLibrary);
+  mShaderLibrary = mResourceSystem->HasResourceLibrary(ShaderLibrary);
 
   Zero::SpirVNameSettings nameSettings;
   ZilchShaderIRGenerator::LoadNameSettings(nameSettings);
@@ -67,14 +71,14 @@ void ZilchShaderManager::ClearMaterialDefinitions()
   mMaterialDefinitions.Clear();
 }
 
-void ZilchShaderManager::AddShaderFragmentProjectDirectory(const String& shaderProjectDir)
+void ZilchShaderManager::AddFragmentFile(const String& shaderProjectDir)
 {
-  mShaderProjects.PushBack(shaderProjectDir);
+  mFragmentFiles.PushBack(shaderProjectDir);
 }
 
-void ZilchShaderManager::ClearShaderFragmentProjects()
+void ZilchShaderManager::ClearShaderFragmentFiles()
 {
-  mShaderProjects.Clear();
+  mFragmentFiles.Clear();
 }
 
 void ZilchShaderManager::CreateShadersAndMaterials(Renderer* renderer)
@@ -93,9 +97,13 @@ void ZilchShaderManager::ClearShadersAndMaterials(Renderer* renderer)
   mMaterialLibrary->Destroy();
 }
 
-void ZilchShaderManager::ClearAll()
+void ZilchShaderManager::ClearAll(Renderer* renderer)
 {
+  ClearShadersAndMaterials(renderer);
   ClearMaterialDefinitions();
+  ClearShaderFragmentFiles();
+  mGenerator->ClearShadersProjectAndLibrary();
+  mGenerator->ClearFragmentsProjectAndLibrary();
 }
 
 void ZilchShaderManager::CreateShaders(Renderer* renderer)
@@ -112,8 +120,8 @@ void ZilchShaderManager::CreateShaders(Renderer* renderer)
 
 void ZilchShaderManager::LoadAndCompileFragments()
 {
-  for(size_t i = 0; i < mShaderProjects.Size(); ++i)
-    mGenerator->RecursivelyLoadDirectory(mShaderProjects[i], mGenerator->mFragmentProject);
+  for(size_t i = 0; i < mFragmentFiles.Size(); ++i)
+    mGenerator->AddFragmentCode(Zero::ReadFileIntoString(mFragmentFiles[i]), mFragmentFiles[i], nullptr);
   mGenerator->CompileAndTranslateFragments();
 }
 
@@ -133,16 +141,19 @@ void ZilchShaderManager::CreateMaterialZilchShader(MaterialCreationData& materia
 {
   // Create the shader definition for this material
   ShaderDefinition shaderDef;
-  shaderDef.mShaderName = materialCreationData.mMaterialName;
+  shaderDef.mShaderName = materialCreationData.mName;
+  size_t fragmentTypeCounts[Zero::FragmentType::Size] = {0};
   for(size_t i = 0; i < materialCreationData.mFragmentNames.Size(); ++i)
   {
     ZilchShaderIRType* shaderType = mGenerator->FindFragmentType(materialCreationData.mFragmentNames[i]);
+    if(shaderType->mMeta != nullptr)
+      ++fragmentTypeCounts[shaderType->mMeta->mFragmentType];
     shaderDef.mFragments.PushBack(shaderType);
   }
 
   // Create the shader composition for this material
   Zero::ShaderCapabilities capabilities;
-  if(materialCreationData.mMaterialName.Contains("Compute"))
+  if(fragmentTypeCounts[Zero::FragmentType::Compute] != 0)
     mGenerator->ComposeComputeShader(shaderDef, capabilities);
   else
     mGenerator->ComposeShader(shaderDef, capabilities);
@@ -164,7 +175,7 @@ void ZilchShaderManager::ExtractShaders()
   for(size_t i = 0; i < mMaterialDefinitions.Size(); ++i)
   {
     MaterialCreationData& materialCreationData = mMaterialDefinitions[i];
-    ShaderDefinition* shaderDef = mGenerator->mShaderDefinitionMap.FindPointer(materialCreationData.mMaterialName);
+    ShaderDefinition* shaderDef = mGenerator->mShaderDefinitionMap.FindPointer(materialCreationData.mName);
 
     // Create the shader from the shader definition
     Shader* shader = new Shader();
@@ -270,13 +281,13 @@ void ZilchShaderManager::CreateMaterialBlockTemplate(MaterialBlock* block, Zilch
 Material* ZilchShaderManager::CreateMaterial(ShaderDefinition& shaderDef)
 {
   Material* material = new Material();
-  material->mMaterialName = shaderDef.mShaderName;
+  material->mName = shaderDef.mShaderName;
   
   HashMap<String, MaterialBlock*> blockNameMap;
   CreateMaterialFromBlockTemplates(shaderDef, blockNameMap, material);
   ExtractMaterialReflection(shaderDef, blockNameMap, material);
 
-  mMaterialLibrary->Add(material->mMaterialName, material);
+  mMaterialLibrary->Add(material->mName, material);
   return material;
 }
 

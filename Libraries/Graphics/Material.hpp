@@ -6,7 +6,7 @@
 #include "GraphicsStandard.hpp"
 
 #include "ShaderProperties.hpp"
-#include "ResourceLibrary.hpp"
+#include "Resource.hpp"
 #include "MaterialProperties.hpp"
 
 namespace Graphics
@@ -18,8 +18,10 @@ class Shader;
 class MaterialCreationData
 {
 public:
+  void Serialize(Serializer& serializer);
+
   Array<String> mFragmentNames;
-  String mMaterialName;
+  String mName;
 };
 
 //-------------------------------------------------------------------MaterialBlock
@@ -41,7 +43,7 @@ public:
 };
 
 //-------------------------------------------------------------------Material
-class Material : public Resource
+class Material : public Engine::Resource
 {
 public:
   Material();
@@ -52,14 +54,15 @@ public:
   Array<MaterialBlock*> mMaterialBlocks;
   ShaderPropertyBindingData mMaterialStageBindingData[Zero::FragmentType::Size];
 
-  String mMaterialName;
   Shader* mShader;
 };
 
 //-------------------------------------------------------------------MaterialLibrary
-class MaterialLibrary : public ResourceLibrary<Material>
+class MaterialLibrary : public Engine::ResourceLibrary<Material>
 {
 public:
+  DeclareResourceLibraryType(MaterialLibrary);
+
   void Destroy() override;
 
   HashMap<String, MaterialBlock*> mFragmentBlockTemplates;

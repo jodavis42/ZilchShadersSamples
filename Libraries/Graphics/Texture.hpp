@@ -4,7 +4,7 @@
 #pragma once
 
 #include "GraphicsStandard.hpp"
-#include "ResourceLibrary.hpp"
+#include "Resource.hpp"
 
 namespace Graphics
 {
@@ -23,6 +23,8 @@ struct TextureFormat
     Depth16, Depth24, Depth32, Depth32f,   // depth
     Depth24Stencil8, Depth32fStencil8Pad24 // depth-stencil
   };
+
+  DeclareEnumType(TextureFormat);
 };
 
 //-------------------------------------------------------------------TextureType
@@ -30,8 +32,10 @@ struct TextureType
 {
   enum Enum
   {
-    Texture2D, TextureCube
+    None, Texture2D, TextureCube
   };
+
+  DeclareEnumType(TextureType);
 };
 
 //-------------------------------------------------------------------TextureFiltering
@@ -39,8 +43,10 @@ struct TextureFiltering
 {
   enum Enum
   {
-    Nearest, Bilinear, Trilinear
+    None, Nearest, Bilinear, Trilinear
   };
+
+  DeclareEnumType(TextureFiltering);
 };
 
 //-------------------------------------------------------------------TextureAddressing
@@ -48,12 +54,14 @@ struct TextureAddressing
 {
   enum Enum
   {
-    Clamp, Repeat, Mirror
+    None, Clamp, Repeat, Mirror
   };
+
+  DeclareEnumType(TextureAddressing);
 };
 
 //-------------------------------------------------------------------Texture
-class Texture : public Resource
+class Texture : public Engine::Resource
 {
 public:
   Texture();
@@ -67,13 +75,13 @@ public:
   TextureAddressing::Enum mAddressingX;
   TextureAddressing::Enum mAddressingY;
   Array<float> mTextureData;
-  String mName;
 };
 
 //-------------------------------------------------------------------TextureLibrary
-class TextureLibrary : public ResourceLibrary<Texture>
+class TextureLibrary : public Engine::ResourceLibrary<Texture>
 {
 public:
+  DeclareResourceLibraryType(TextureLibrary);
 };
 
 }//namespace Graphics

@@ -38,6 +38,6 @@ add_custom_command(TARGET Framework POST_BUILD   # Adds a post-build event to My
 set_target_properties(Framework PROPERTIES FOLDER "Applications")
 
 get_target_property(ShaderCoreDir ShaderCorePackage IMPORTED_LOCATION)
-get_target_property(TestShadersDir TestShadersPackage IMPORTED_LOCATION)
+get_target_property(ProjectsDir ProjectsPackage IMPORTED_LOCATION)
 
 configure_file(BuildConfig.data BuildConfig.data ESCAPE_QUOTES) 

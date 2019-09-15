@@ -1,0 +1,11 @@
+{
+  "Name": "ParticleRender",
+  "MaterialBlocks": [
+    {
+      "Name": "ParticleVertex"
+    },
+    {
+      "Name": "ParticlePixel"
+    },
+  ]
+}

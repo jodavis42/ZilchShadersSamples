@@ -20,6 +20,7 @@ Set_Common_TargetCompileOptions(Graphics)
 target_link_libraries(Graphics
                       PUBLIC
                       ZilchShaders
+                      Engine
 )
 
 set_target_properties(Graphics PROPERTIES FOLDER "Libraries")

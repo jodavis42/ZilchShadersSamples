@@ -1,6 +1,12 @@
-//#include "Precompiled.hpp"
+///////////////////////////////////////////////////////////////////////////////
+/// Authors: Joshua Davis
+///////////////////////////////////////////////////////////////////////////////
+#include "Precompiled.hpp"
 
 #include "Mouse.hpp"
+
+namespace Engine
+{
 
 //-----------------------------------------------------------------------------MouseButton
 MouseButton::MouseButton()
@@ -88,3 +94,4 @@ void Mouse::ProcessButton(int button, bool isDown)
   }
 }
 
+}//namespace Engine

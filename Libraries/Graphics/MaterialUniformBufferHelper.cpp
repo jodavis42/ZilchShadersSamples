@@ -10,6 +10,7 @@
 #include "Renderer.hpp"
 #include "AppBuiltInTypes.hpp"
 #include "Texture.hpp"
+#include "ResourceSystem.hpp"
 
 namespace Graphics
 {
@@ -20,9 +21,9 @@ MaterialBufferData::MaterialBufferData()
   mBufferType = BufferType::None;
 }
 
-void ExtractMaterialData(Model* model, TextureLibrary* textureLibrary, MaterialRendererData& outputData)
+void ExtractMaterialData(Material* material, ResourceSystem* resourceSystem, MaterialRendererData& outputData)
 {
-  ExtractMaterialData(model->mMaterial, textureLibrary, outputData);
+  ExtractMaterialData(material, resourceSystem->HasResourceLibrary(TextureLibrary), outputData);
 }
 
 void ExtractMaterialData(Material* material, TextureLibrary* textureLibrary, MaterialRendererData& outputData)

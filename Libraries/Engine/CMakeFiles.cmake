@@ -1,0 +1,28 @@
+target_sources(Engine
+  PRIVATE
+    ${CMAKE_CURRENT_LIST_DIR}/Precompiled.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/Precompiled.hpp
+    ${CMAKE_CURRENT_LIST_DIR}/EngineStandard.hpp
+    ${CMAKE_CURRENT_LIST_DIR}/Cog.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/Cog.hpp
+    ${CMAKE_CURRENT_LIST_DIR}/CompositionInitializer.hpp
+    ${CMAKE_CURRENT_LIST_DIR}/Component.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/Component.hpp
+    ${CMAKE_CURRENT_LIST_DIR}/Composition.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/Composition.hpp
+    ${CMAKE_CURRENT_LIST_DIR}/Enums.hpp
+    ${CMAKE_CURRENT_LIST_DIR}/Transform.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/Transform.hpp
+    ${CMAKE_CURRENT_LIST_DIR}/Resource.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/Resource.hpp
+    ${CMAKE_CURRENT_LIST_DIR}/ResourceSystem.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/ResourceSystem.hpp
+    ${CMAKE_CURRENT_LIST_DIR}/Serializer.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/Serializer.hpp
+    ${CMAKE_CURRENT_LIST_DIR}/Space.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/Space.hpp
+    ${CMAKE_CURRENT_LIST_DIR}/Keyboard.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/Keyboard.hpp
+    ${CMAKE_CURRENT_LIST_DIR}/Mouse.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/Mouse.hpp
+)

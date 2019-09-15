@@ -38,6 +38,7 @@ add_definitions(-DPLATFORM_WINDOWS=1 -DPLATFORM_HARDWARE=1 -DPLATFORM_NAME="Win"
 add_subdirectory(ZilchShaders)
 add_subdirectory(External)
 add_subdirectory(Shaders)
+add_subdirectory(Projects)
 add_subdirectory(Libraries)
 add_subdirectory(Applications)
 

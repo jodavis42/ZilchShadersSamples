@@ -6,16 +6,27 @@
 
 #include "ZilchShadersStandard.hpp"
 
+#include "JsonSerializer.hpp"
+#include "GraphicsSpace.hpp"
+
 //-------------------------------------------------------------------Application
 Application::Application()
 {
   mRenderer = new OpenGlRenderer();
   mRenderer->Initialize();
-  mMeshLibrary = new MeshLibrary();
-  mMaterialLibrary = new MaterialLibrary();
-  mTextureLibrary = new TextureLibrary();
-  mShaderLibrary = new ShaderLibrary();
+  mResourceSystem = new ResourceSystem();
+  mResourceSystem->RegisterResourceLibrary(MeshLibrary);
+  mResourceSystem->RegisterResourceLibrary(MaterialLibrary);
+  mResourceSystem->RegisterResourceLibrary(TextureLibrary);
+  mResourceSystem->RegisterResourceLibrary(ShaderLibrary);
+  mResourceSystem->RegisterResourceLibrary(LevelLibrary);
+  mResourceSystem->RegisterResourceLibrary(ProjectLibrary);
   mZilchShaderManager = new ZilchShaderManager();
+
+
+  mSpace = nullptr;
+  mCurrentLevel = nullptr;
+  mCurrentProject = nullptr;
   mImGui = nullptr;
 
   mCamera = new Camera();
@@ -23,18 +34,11 @@ Application::Application()
   mCamera->mTranslation = Vector3(0, 0, 5);
   mCamera->mPhi = Math::cPi / 2.0f;
   mCamera->mTheta = -Math::cPi / 2.0f;
-  
-  mFrameData.mLogicTime = 0;
-  mFrameData.mFrameTime = 0;
 }
 
 Application::~Application()
 {
-  delete mZilchShaderManager;
-  delete mShaderLibrary;
-  delete mTextureLibrary;
-  delete mMaterialLibrary;
-  delete mMeshLibrary;
+  DestroyProject();
   delete mCamera;
   delete mRenderer;
 
@@ -44,7 +48,7 @@ Application::~Application()
 
 void Application::Initialize()
 {
-  Zilch::ZilchSetup zilchSetup;
+  Zilch::ZilchSetup* zilchSetup = new Zilch::ZilchSetup();
 
   Zilch::Module module;
   Zilch::ExecutableState::CallingState = module.Link();
@@ -52,56 +56,22 @@ void Application::Initialize()
   Zero::ShaderSettingsLibrary::InitializeInstance();
   Zero::ShaderSettingsLibrary::GetInstance().GetLibrary();
 
-  InitializeMeshes();
+  Zilch::JsonReader jsonReader;
+  Zilch::CompilationErrors errors;
+  Zilch::JsonValue* json = jsonReader.ReadIntoTreeFromFile(errors, "BuildConfig.data", nullptr);
+  String shadersCoreDir = json->GetMember("ShaderCoreDir")->AsString();
+  mZilchShaderManager->Initialize(mResourceSystem, mRenderer->CreateBackend(), shadersCoreDir);
+
   InitializeTextures();
-  InitializeShadersAndMaterials();
-  InitializeBuffers();
-  InitializeModels();
-}
 
-void  Application::InitializeMeshes()
-{
-  // Create the quad mesh
-  {
-    Mesh* mesh = new Mesh();
-    mesh->mVertices.PushBack(Vertex(Vector3(-1, -1, -1), Vector3::cZAxis, Vector2(0, 0), Vector4(1)));
-    mesh->mVertices.PushBack(Vertex(Vector3(+1, -1, -1), Vector3::cZAxis, Vector2(1, 0), Vector4(1)));
-    mesh->mVertices.PushBack(Vertex(Vector3(-1, +1, -1), Vector3::cZAxis, Vector2(0, 1), Vector4(1)));
-    mesh->mVertices.PushBack(Vertex(Vector3(+1, +1, -1), Vector3::cZAxis, Vector2(1, 1), Vector4(1)));
-
-    mesh->mIndices.PushBack(2);
-    mesh->mIndices.PushBack(0);
-    mesh->mIndices.PushBack(1);
-
-    mesh->mIndices.PushBack(2);
-    mesh->mIndices.PushBack(1);
-    mesh->mIndices.PushBack(3);
-
-    mesh->mElementType = MeshElementType::Triangles;
-    mesh->mName = "Quad";
-
-    mRenderer->CreateMesh(mesh);
-
-    mMeshLibrary->Add(mesh->mName, mesh);
-    mMeshLibrary->mDefaultName = "Quad";
-  }
- 
-  // Create the particle system point mesh (no actual data, just a binding format)
-  {
-    Mesh* pointMesh = new Mesh();
-    pointMesh->mVertices.PushBack(Vertex(Vector3::cZero, Vector3::cZAxis, Vector2(0, 0), Vector4(1)));
-    pointMesh->mIndexCount = 100;
-    pointMesh->mElementType = MeshElementType::Points;
-    pointMesh->mName = "Points";
-  
-    mRenderer->CreateMesh(pointMesh);
-  
-    mMeshLibrary->Add(pointMesh->mName, pointMesh);
-  }
+  LoadProjects();
+  LevelLibrary* levelLibrary = mResourceSystem->HasResourceLibrary(LevelLibrary);
+  LoadLevel(levelLibrary->GetDefault());
 }
 
 void Application::InitializeTextures()
 {
+  TextureLibrary* textureLibrary = mResourceSystem->HasResourceLibrary(TextureLibrary);
   {
     Texture* texture = new Texture();
     texture->mSizeX = 16;
@@ -126,9 +96,9 @@ void Application::InitializeTextures()
     mRenderer->CreateTexture(texture);
     // Clear data (not needed since it's uploaded to the renderer now)
     texture->mTextureData.Clear();
-    mTextureLibrary->Add(texture->mName, texture);
+    textureLibrary->Add(texture->mName, texture);
   }
-  
+
   {
     Texture* texture = new Texture();
     texture->mSizeX = 16;
@@ -153,112 +123,201 @@ void Application::InitializeTextures()
     mRenderer->CreateTexture(texture);
     // Clear data (not needed since it's uploaded to the renderer now)
     texture->mTextureData.Clear();
-    mTextureLibrary->Add(texture->mName, texture);
+    textureLibrary->Add(texture->mName, texture);
   }
 }
 
-void Application::InitializeShadersAndMaterials()
+void Application::LoadProjects()
 {
-  Zilch::JsonReader jsonReader;
-  Zilch::CompilationErrors errors;
-  Zilch::JsonValue* json = jsonReader.ReadIntoTreeFromFile(errors, "BuildConfig.data", nullptr);
-  String shadersCoreDir = json->GetMember("ShaderCoreDir")->AsString();
-  String testShadersDir = json->GetMember("TestShadersDir")->AsString();
+  ProjectLibrary* projectLibrary = mResourceSystem->HasResourceLibrary(ProjectLibrary);
+  // Load the projects directory from the config
+  JsonSerializer serializer;
+  serializer.mResourceSystem = mResourceSystem;
+  serializer.Load("BuildConfig.data");
+  String ProjectsDir;
+  serializer.SerializeField(ProjectsDir);
 
-  mZilchShaderManager->Initialize(mTextureLibrary, mMaterialLibrary, mShaderLibrary, mRenderer->CreateBackend(), shadersCoreDir);
-  
-  mZilchShaderManager->AddShaderFragmentProjectDirectory(testShadersDir);
+  // Add each folder as a project
+  Zero::FileRange range(ProjectsDir);
+  for(; !range.Empty(); range.PopFront())
+  {
+    auto entry = range.FrontEntry();
+    String dirPath = entry.GetFullPath();
+    if(!Zero::DirectoryExists(dirPath))
+      continue;
 
-  MaterialCreationData simpleMat;
-  simpleMat.mMaterialName = "Shader";
-  simpleMat.mFragmentNames.PushBack("Vertex");
-  simpleMat.mFragmentNames.PushBack("Pixel");
-  mZilchShaderManager->AddMaterialDefinition(simpleMat);
+    Project* project = new Project();
+    project->mFilePath = dirPath;
+    project->mName = entry.mFileName;
+    projectLibrary->Add(project->mName, project);
+  }
+  projectLibrary->mDefaultName = "Quads";
 
-  MaterialCreationData computeMat;
-  computeMat.mMaterialName = "Compute";
-  computeMat.mFragmentNames.PushBack("SimpleParticleReader");
-  computeMat.mFragmentNames.PushBack("ParticleWorldGravity");
-  computeMat.mFragmentNames.PushBack("ParticleIntegration");
-  computeMat.mFragmentNames.PushBack("SimpleParticleWriter");
-  mZilchShaderManager->AddMaterialDefinition(computeMat);
-  
-  MaterialCreationData particleMat;
-  particleMat.mMaterialName = "ParticleRender";
-  particleMat.mFragmentNames.PushBack("ParticleVertex");
-  particleMat.mFragmentNames.PushBack("ParticlePixel");
-  mZilchShaderManager->AddMaterialDefinition(particleMat);
+  LoadProject(projectLibrary->GetDefault());
+}
 
+void Application::LoadProject(Project* project)
+{
+  DestroyProject();
+
+  mCurrentProject = project;
+
+  // Load all of the resources
+  Zero::FileRange range(project->mFilePath);
+  for(; !range.Empty(); range.PopFront())
+  {
+    auto entry = range.FrontEntry();
+    String ext = Zero::FilePath::GetExtension(entry.mFileName);
+    if(ext == "material")
+      LoadMaterial(entry.GetFullPath());
+    else if(ext == "mesh")
+      LoadMesh(entry.GetFullPath());
+    else if(ext == "level")
+      LoadLevel(entry.GetFullPath());
+    else if(ext == "zilchFrag")
+      LoadZilchFragment(entry.GetFullPath());
+  }
+
+  MeshLibrary* meshLibrary = mResourceSystem->HasResourceLibrary(MeshLibrary);
+  LevelLibrary* levelLibrary = mResourceSystem->HasResourceLibrary(LevelLibrary);
+  // Create all of the resources now that their loaded. This is done in a second pass to control the order.
+  for(auto range = meshLibrary->Values(); !range.Empty(); range.PopFront())
+    mRenderer->CreateMesh(range.Front());
   mZilchShaderManager->CreateShadersAndMaterials(mRenderer);
+
+  LoadLevel(levelLibrary->GetDefault());
 }
 
-void Application::InitializeBuffers()
+void Application::DestroyProject()
 {
-  // Create the frame data buffer
+  DestroyLevel();
+
+  LevelLibrary* levelLibrary = mResourceSystem->HasResourceLibrary(LevelLibrary);
+  MeshLibrary* meshLibrary = mResourceSystem->HasResourceLibrary(MeshLibrary);
+  MaterialLibrary* materialLibrary = mResourceSystem->HasResourceLibrary(MaterialLibrary);
+  ShaderLibrary* shaderLibrary = mResourceSystem->HasResourceLibrary(ShaderLibrary);
+  // Destroy all of the resources (making sure to unload them from the renderer where appropriate)
+  for(auto range = meshLibrary->Values(); !range.Empty(); range.PopFront())
+    mRenderer->DestroyMesh(range.Front());
+  meshLibrary->Destroy();
+
+  for(auto range = materialLibrary->Values(); !range.Empty(); range.PopFront())
+    mRenderer->DestroyShader(range.Front()->mShader);
+  materialLibrary->Destroy();
+  shaderLibrary->Destroy();
+
+  levelLibrary->Destroy();
+  mZilchShaderManager->ClearAll(mRenderer);
+  mCurrentProject = nullptr;
+}
+
+
+void Application::LoadLevel(const String& filePath)
+{
+  LevelLibrary* levelLibrary = mResourceSystem->HasResourceLibrary(LevelLibrary);
+  JsonSerializer serializer;
+  serializer.mResourceSystem = mResourceSystem;
+  serializer.Load(filePath);
+  Level* level = levelLibrary->SerializeResource(serializer);
+  level->mFilePath = filePath;
+}
+
+void Application::LoadLevel(Level* level)
+{
+  DestroyLevel();
+  if(level == nullptr)
+    return;
+
+  mCurrentLevel = level;
+  mSpace = new Space();
+
+  GraphicsSpace* graphicsSpace = new GraphicsSpace();
+  graphicsSpace->mRenderer = mRenderer;
+  graphicsSpace->mResourceSystem = mResourceSystem;
+  graphicsSpace->mCamera = mCamera;
+  mSpace->AddComponent("GraphicsSpace", graphicsSpace);
+  mSpace->Initialize(Engine::CompositionInitializer());
+
+  JsonSerializer serializer;
+  serializer.mResourceSystem = mResourceSystem;
+  serializer.Load(level->mFilePath);
+
+  size_t objCount = serializer.BeginArray("Objects");
+  if(objCount != 0)
   {
-    ByteBuffer frameDataByteBuffer;
-    frameDataByteBuffer.Set(mFrameData);
-    BufferCreationData frameDataCreationBuffer;
-    frameDataCreationBuffer.mBufferData = &frameDataByteBuffer;
-    frameDataCreationBuffer.mName = "FrameData";
-    mFrameDataBufferData = mRenderer->CreateBuffer(frameDataCreationBuffer, BufferType::Uniform);
-    mFrameDataBufferData.mBindingIndex = 0;
-  }
-  
-  // Create the camera data buffer
-  {
-    ByteBuffer cameraDataByteBuffer;
-    cameraDataByteBuffer.Set(mCameraData);
-    BufferCreationData cameraDataCreationBuffer;
-    cameraDataCreationBuffer.mBufferData = &cameraDataByteBuffer;
-    cameraDataCreationBuffer.mName = "CameraData";
-    mCameraDataBufferData = mRenderer->CreateBuffer(cameraDataCreationBuffer, BufferType::Uniform);
-    mCameraDataBufferData.mBindingIndex = 1;
-  }
-  
-  // Create the particle system ssbo data
-  {
-    BufferCreationData creationData;
-    creationData.mName = "Particles";
-    mParticlesSsboBufferData = mRenderer->CreateBuffer(creationData, BufferType::StructuredStorage);
-    BufferMappingType::Enum mappingType = (BufferMappingType::Enum)(BufferMappingType::Write | BufferMappingType::InvalidateBuffer);
-    ParticleData* ssboData = (ParticleData*)mRenderer->MapBuffer(mParticlesSsboBufferData, 0, sizeof(ParticleData) * 100, mappingType);
-    for(size_t y = 0; y < 10; ++y)
+    for(size_t i = 0; i < objCount; ++i)
     {
-      for(size_t x = 0; x < 10; ++x)
+      serializer.BeginArrayItem(i);
+
+      Cog* cog = new Cog();
+      serializer.SerializeNamedField("Name", cog->mName);
+
+      if(serializer.BeginObject("Transform"))
       {
-        ParticleData& data = ssboData[x + y * 10];
-        data.mPosition = Vector4(x / 10.0f, y / 10.0f, 0, 1);
-        data.mVelocity = Vector4(0, 0, 0, 0);
+        Transform* transform = new Transform();
+        transform->Serialize(serializer);
+        cog->AddComponent("Transform", transform);
+        serializer.End();
       }
+      if(serializer.BeginObject("Model"))
+      {
+        String meshName, materialName;
+        Model* model = new Model();
+        model->Serialize(serializer);
+        cog->AddComponent("Model", model);
+        serializer.End();
+      }
+      if(serializer.BeginObject("ComputePass"))
+      {
+        String materialName;
+        ComputePass* computePass = new ComputePass();
+        computePass->Serialize(serializer);
+        cog->AddComponent("ComputePass", computePass);
+        serializer.End();
+      }
+
+      mSpace->Add(cog);
+      serializer.End();
     }
-    mRenderer->UnMapBuffer(mParticlesSsboBufferData);
+    serializer.End();
   }
 }
 
-void Application::InitializeModels()
+void Application::DestroyLevel()
 {
-  Model* model = new Model();
-  model->mScale = Vector3(2);
-  model->mRotation = Matrix3::cIdentity;
-  model->mTranslation = Vector3(1, 0, 0);
-  model->mMaterial = mMaterialLibrary->Find("Shader");
-  model->mMesh = mMeshLibrary->GetDefault();
-  mModels.PushBack(model);
+  delete mSpace;
+  mSpace = nullptr;
+  mCurrentLevel = nullptr;
+}
 
-  model = new Model();
-  model->mScale = Vector3(1);
-  model->mRotation = Matrix3::cIdentity;
-  model->mTranslation = Vector3(-2, 0, 0);
-  model->mMaterial = mMaterialLibrary->Find("Shader");
-  model->mMesh = mMeshLibrary->GetDefault();
-  mModels.PushBack(model);
+void Application::LoadMesh(const String& filePath)
+{
+  JsonSerializer serializer;
+  serializer.mResourceSystem = mResourceSystem;
+  serializer.Load(filePath);
+
+  MeshLibrary* meshLibrary = mResourceSystem->HasResourceLibrary(MeshLibrary);
+  meshLibrary->SerializeResource(serializer);
+}
+
+void Application::LoadMaterial(const String& filePath)
+{
+  JsonSerializer serializer;
+  serializer.mResourceSystem = mResourceSystem;
+  serializer.Load(filePath);
+
+  MaterialCreationData material;
+  material.Serialize(serializer);
+  mZilchShaderManager->AddMaterialDefinition(material);
+}
+
+void Application::LoadZilchFragment(const String& filePath)
+{
+  mZilchShaderManager->AddFragmentFile(filePath);
 }
 
 void Application::Update(float frameTime)
 {
-  mFrameData.mFrameTime += frameTime;
-  mFrameData.mLogicTime += frameTime;
 }
 
 void Application::Reshape(int width, int height, float aspectRatio)
@@ -269,115 +328,16 @@ void Application::Reshape(int width, int height, float aspectRatio)
 
 void Application::Draw()
 {
-  mCamera->SetMatrix();
+  mSpace->Update(0.016f);
 
-  // Update the per-frame data
-  ByteBuffer frameData;
-  frameData.Set(mFrameData);
-  mRenderer->UploadBuffer(mFrameDataBufferData, frameData);
-
-  float nearDistance = 0.1f;
-  float farDistance = 1000.0f;
-  float fov = Math::DegToRad(45);
-  mCameraData.mFarPlane = farDistance;
-  mCameraData.mNearPlane = nearDistance;
-  
-  // Recompute the non-changing part of the transform buffer (could be a separate uniform buffer)
-  TransformBufferData transformData;
-  transformData.mViewToPerspective = mRenderer->BuildPerspectiveMatrix(fov, mCamera->mAspectRatio, nearDistance, farDistance);
-  transformData.mWorldToView = mCamera->mWorldToView.Transposed();
-  transformData.mPerspectiveToApiPerspective.SetIdentity();
-
-  mRenderer->ClearTarget();
-
-  DrawCompute(transformData);
-  for(size_t modelIndex = 0; modelIndex < mModels.Size(); ++modelIndex)
-  {
-    Model* model = mModels[modelIndex];
-    Draw(model, transformData);
-  }
+  ProjectLibrary* projectLibrary = mResourceSystem->HasResourceLibrary(ProjectLibrary);
+  LevelLibrary* levelLibrary = mResourceSystem->HasResourceLibrary(LevelLibrary);
+  MaterialLibrary* materialLibrary = mResourceSystem->HasResourceLibrary(MaterialLibrary);
 
   mImGui->NewFrame();
-  mImGui->DrawMaterials(mMaterialLibrary);
+  mImGui->DrawResources(mResourceSystem);
   mImGui->EndFrame();
   mImGui->Render();
-}
-
-void Application::DrawCompute(TransformBufferData& transformData)
-{
-  ObjectData objData;
-
-  // Setup the compute render data
-  Material* computeMaterial = mMaterialLibrary->Find("Compute");
-  MaterialRendererData materialData;
-  ExtractMaterialData(computeMaterial, mTextureLibrary, materialData);
-  objData.mShader = computeMaterial->mShader;
-  mParticlesSsboBufferData.mBindingIndex = 0;
-  objData.mBuffers.PushBack(mParticlesSsboBufferData);
-  
-  // Run the compute pass
-  mRenderer->DispatchCompute(objData, 100, 1, 1);
-
-  // Setup the render pass
-  objData.mMesh = mMeshLibrary->Find("Points");
-  Material* particleRenderMaterial = mMaterialLibrary->Find("ParticleRender");
-  MaterialRendererData particleRenderMaterialData;
-  ExtractMaterialData(particleRenderMaterial, mTextureLibrary, particleRenderMaterialData);
-  objData.mShader = particleRenderMaterial->mShader;
-
-  ByteBuffer transformByteBuffer;
-  transformByteBuffer.Set(transformData);
-  BufferCreationData transformCreationData;
-  transformCreationData.mBufferData = &transformByteBuffer;
-
-  EphemeralBuffer& ephemeralBuffer = objData.mEphemeralBuffers.PushBack();
-  ephemeralBuffer.mBufferType = BufferType::Uniform;
-  ephemeralBuffer.mCreationData.mBufferData = &transformByteBuffer;
-  ephemeralBuffer.mRenderData.mBindingIndex = 2;
-  objData.mEphemeralBuffers.PushBack(ephemeralBuffer);
-
-  mRenderer->Draw(objData);
-}
-
-void Application::Draw(Model* model, TransformBufferData& transformData)
-{
-  Material* material = model->mMaterial;
-
-  ByteBuffer transformByteBuffer;
-  transformData.mLocalToWorld = Matrix4::GenerateTransform(model->mTranslation, model->mRotation, model->mScale);
-  transformByteBuffer.Set(transformData);
-
-  ObjectData objData;
-  objData.mMesh = model->mMesh;
-  objData.mShader = material->mShader;
-  // Record all the buffers and textures to render with
-  objData.mBuffers.PushBack(mFrameDataBufferData);
-  objData.mBuffers.PushBack(mCameraDataBufferData);
-
-  MaterialRendererData materialData;
-  ExtractMaterialData(model, mTextureLibrary, materialData);
-
-  {
-    EphemeralBuffer& ephemeralTransformBuffer = objData.mEphemeralBuffers.PushBack();
-    ephemeralTransformBuffer.mBufferType = BufferType::Uniform;
-    ephemeralTransformBuffer.mCreationData.mBufferData = &transformByteBuffer;
-    ephemeralTransformBuffer.mRenderData.mBindingIndex = 2;
-  }
-  
-  for(size_t fragIndex = 0; fragIndex < Zero::FragmentType::Size; ++fragIndex)
-  {
-    if(materialData.mMaterialBuffers[fragIndex].mBindingIndex != -1)
-    {
-      EphemeralBuffer& buffer = objData.mEphemeralBuffers.PushBack();
-      MaterialBufferData& materialBufferData = materialData.mMaterialBuffers[fragIndex];
-      buffer.mBufferType = materialBufferData.mBufferType;
-      buffer.mCreationData.mBufferData = &materialBufferData.mBufferData;
-      buffer.mRenderData.mBindingIndex = materialBufferData.mBindingIndex;
-    }
-  }
-  objData.mTextures = materialData.mTextures;
-
-  mRenderer->Draw(objData);
 }
 
 void Application::OnKeyDown(unsigned int key)

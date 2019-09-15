@@ -4,21 +4,20 @@
 #pragma once
 
 #include "GraphicsStandard.hpp"
-#include "ResourceLibrary.hpp"
+#include "Resource.hpp"
 
 namespace Graphics
 {
 
 //-------------------------------------------------------------------Shader
-class Shader : public Resource
+class Shader : public Engine::Resource
 {
 public:
-  String mName;
   String mShaderSource[Zero::FragmentType::Size];
 };
 
 //-------------------------------------------------------------------ShaderLibrary
-class ShaderLibrary : public ResourceLibrary<Shader>
+class ShaderLibrary : public Engine::ResourceLibrary<Shader>
 {
 
 };

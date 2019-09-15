@@ -1,6 +1,12 @@
-//#include "Precompiled.hpp"
+///////////////////////////////////////////////////////////////////////////////
+/// Authors: Joshua Davis
+///////////////////////////////////////////////////////////////////////////////
+#include "Precompiled.hpp"
 
 #include "Keyboard.hpp"
+
+namespace Engine
+{
 
 //-----------------------------------------------------------------------------KeyState
 KeyState::KeyState()
@@ -105,3 +111,5 @@ void Keyboard::ProcessKey(int key, bool isDown)
   }
 
 }
+
+}//namespace Engine

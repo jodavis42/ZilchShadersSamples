@@ -6,7 +6,8 @@
 #include "imgui_impl_sdl.h"
 #include "imgui_impl_opengl3.h"
 
-#include "ResourceLibrary.hpp"
+#include "Resource.hpp"
+#include "Application.hpp"
 
 ImGuiHelper::ImGuiHelper()
 {
@@ -61,24 +62,62 @@ void ImGuiHelper::Render()
   ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 }
 
-void ImGuiHelper::DrawMaterials(MaterialLibrary* materialLibrary)
+void ImGuiHelper::DrawResources(ResourceSystem* resourceSystem)
 {
   //bool p_open;
   //ImGui::ShowDemoWindow(&p_open);
 
+  ProjectLibrary* projectLibrary = resourceSystem->HasResourceLibrary(ProjectLibrary);
+  LevelLibrary* levelLibrary = resourceSystem->HasResourceLibrary(LevelLibrary);
+  MaterialLibrary* materialLibrary = resourceSystem->HasResourceLibrary(MaterialLibrary);
+
   bool open;
-  ImGui::SetNextWindowSize(ImVec2(430, 450), ImGuiCond_FirstUseEver);
-  if(ImGui::Begin("Materials", &open))
+  if(ImGui::Begin("Resources", &open))
   {
-    for(auto range = materialLibrary->Values(); !range.Empty(); range.PopFront())
-      DrawMaterial(range.Front());
+    ImGui::Separator();
+    DrawProjects(projectLibrary);
+
+    ImGui::Separator();
+    DrawLevels(levelLibrary);
+
+    ImGui::Separator();
+    DrawMaterials(materialLibrary);
   }
   ImGui::End();
 }
 
+void ImGuiHelper::DrawProjects(ProjectLibrary* projectLibrary)
+{
+  Application* application = mSdlApp->mApplication;
+  ImGui::Text("Projects");
+  String projectName = application->mCurrentProject->mName;
+  if(DrawResourceProperty(projectName, projectLibrary))
+  {
+    application->LoadProject(projectLibrary->Find(projectName));
+  }
+}
+
+void ImGuiHelper::DrawLevels(LevelLibrary* levelLibrary)
+{
+  Application* application = mSdlApp->mApplication;
+  ImGui::Text("Levels");
+  String levelName = application->mCurrentLevel->mName;
+  if(DrawResourceProperty(levelName, levelLibrary))
+  {
+    application->LoadLevel(levelLibrary->Find(levelName));
+  }
+}
+
+void ImGuiHelper::DrawMaterials(MaterialLibrary* materialLibrary)
+{
+  ImGui::Text("Materials");
+  for(auto range = materialLibrary->Values(); !range.Empty(); range.PopFront())
+    DrawMaterial(range.Front());
+}
+
 void ImGuiHelper::DrawMaterial(Material* material)
 {
-  if(ImGui::CollapsingHeader(material->mMaterialName.c_str()))
+  if(ImGui::CollapsingHeader(material->mName.c_str()))
   {
     for(size_t i = 0; i < material->mMaterialBlocks.Size(); ++i)
       DrawMaterialBlock(material->mMaterialBlocks[i]);
@@ -125,7 +164,7 @@ void ImGuiHelper::DrawMaterialProperty(MaterialProperty* materialProp)
   ImGui::PopID();
 }
 
-void ImGuiHelper::DrawResourceProperty(String& currentValue, Graphics::BaseResourceLibrary* library)
+bool ImGuiHelper::DrawResourceProperty(String& currentValue, Engine::BaseResourceLibrary* library)
 {
   Zero::HashMap<String, int> indexMap;
   Zero::Array<String> resources;
@@ -142,10 +181,13 @@ void ImGuiHelper::DrawResourceProperty(String& currentValue, Graphics::BaseResou
     *out_str = resources[idx].c_str();
     return true;
   };
-  static int currentItem = indexMap.FindValue(currentValue, 0);
-  if(ImGui::Combo("##", &currentItem, lookupFn, &resources, resources.Size()))
+  int currentItem = indexMap.FindValue(currentValue, 0);
+  String libraryName = library->VirtualGetLibraryName();
+  if(ImGui::Combo(libraryName.c_str(), &currentItem, lookupFn, &resources, resources.Size()))
   {
     currentValue = resources[currentItem];
+    return true;
   }
+  return false;
 }
 

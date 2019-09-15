@@ -3,10 +3,17 @@
 ///////////////////////////////////////////////////////////////////////////////
 #include "Precompiled.hpp"
 
-#include "ResourceLibrary.hpp"
+#include "Resource.hpp"
+#include "Serializer.hpp"
 
-namespace Graphics
+namespace Engine
 {
+
+//-------------------------------------------------------------------BaseResourceLibrary
+void Resource::Serialize(Serializer& serializer)
+{
+  serializer.SerializeField(mName);
+}
 
 //-------------------------------------------------------------------BaseResourceLibrary
 BaseResourceLibrary::~BaseResourceLibrary()
@@ -22,6 +29,11 @@ void BaseResourceLibrary::Destroy()
     delete resource;
   }
   mResourceMap.Clear();
+}
+
+String BaseResourceLibrary::VirtualGetLibraryName()
+{
+  return String();
 }
 
 void BaseResourceLibrary::AddInternal(const String& resourceName, Resource* resource)
@@ -45,4 +57,14 @@ Resource* BaseResourceLibrary::GetDefaultInternal()
   return result;
 }
 
-}//namespace Graphics
+void BaseResourceLibrary::SerializeResourceInternal(Serializer& serializer, Resource* resource)
+{
+  resource->Serialize(serializer);
+
+  bool isDefault = false;
+  serializer.SerializeNamedField("Default", isDefault);
+  if(isDefault)
+    mDefaultName = resource->mName;
+}
+
+}//namespace Engine

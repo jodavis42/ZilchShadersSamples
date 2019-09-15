@@ -5,7 +5,11 @@ target_sources(Graphics
     ${CMAKE_CURRENT_LIST_DIR}/AppBuiltInTypes.hpp
     ${CMAKE_CURRENT_LIST_DIR}/ByteBuffer.cpp
     ${CMAKE_CURRENT_LIST_DIR}/ByteBuffer.hpp
+    ${CMAKE_CURRENT_LIST_DIR}/Camera.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/Camera.hpp
     ${CMAKE_CURRENT_LIST_DIR}/GraphicsStandard.hpp
+    ${CMAKE_CURRENT_LIST_DIR}/GraphicsSpace.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/GraphicsSpace.hpp
     ${CMAKE_CURRENT_LIST_DIR}/MaterialProperties.cpp
     ${CMAKE_CURRENT_LIST_DIR}/MaterialProperties.hpp
     ${CMAKE_CURRENT_LIST_DIR}/Material.cpp
@@ -26,8 +30,6 @@ target_sources(Graphics
     ${CMAKE_CURRENT_LIST_DIR}/Buffers.hpp
     ${CMAKE_CURRENT_LIST_DIR}/Renderer.cpp
     ${CMAKE_CURRENT_LIST_DIR}/Renderer.hpp
-    ${CMAKE_CURRENT_LIST_DIR}/ResourceLibrary.cpp
-    ${CMAKE_CURRENT_LIST_DIR}/ResourceLibrary.hpp
     ${CMAKE_CURRENT_LIST_DIR}/ZilchShaderManager.cpp
     ${CMAKE_CURRENT_LIST_DIR}/ZilchShaderManager.hpp
 )

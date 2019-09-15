@@ -1,0 +1,20 @@
+{
+  "Name": "Compute",
+  "MaterialBlocks": [
+    {
+      "Name": "SimpleParticleReader"
+    },
+    {
+      "Name": "ParticleWorldGravity"
+    },
+    {
+      "Name": "ParticleWorldBounds"
+    },
+    {
+      "Name": "ParticleIntegration"
+    },
+    {
+      "Name": "SimpleParticleWriter"
+    }
+  ]
+}

@@ -44,7 +44,7 @@ struct SimpleParticleWriter
 [Compute]
 struct ParticleWorldGravity
 {
-  var Gravity : Real3 = Real3(0, -1, 0);
+  [Input] var Gravity : Real3 = Real3(0, -1, 0);
   
   [Input][Output] var WorldAcceleration : Real3;
   

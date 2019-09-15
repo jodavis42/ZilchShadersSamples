@@ -10,6 +10,7 @@
 namespace Graphics
 {
 
+class ResourceSystem;
 class TextureLibrary;
 class Model;
 class Material;
@@ -34,7 +35,7 @@ public:
 };
 
 /// Helper to extract data from a model/material into the necessary renderer data (e.g. uniform buffers, etc...)
-void ExtractMaterialData(Model* model, TextureLibrary* textureLibrary, MaterialRendererData& outputData);
+void ExtractMaterialData(Material* material, ResourceSystem* resourceSystem, MaterialRendererData& outputData);
 void ExtractMaterialData(Material* material, TextureLibrary* textureLibrary, MaterialRendererData& outputData);
 
 }//namespace Graphics
