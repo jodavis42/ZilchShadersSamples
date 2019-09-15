@@ -11,20 +11,18 @@
 namespace Graphics
 {
 
-class Mesh;
 class Material;
 
-//-------------------------------------------------------------------Model
-class Model : public Engine::Component
+//-------------------------------------------------------------------ComputePass
+class ComputePass : public Engine::Component
 {
 public:
-  Model();
+  ComputePass();
 
   void Serialize(Serializer& serializer) override;
 
-  Mesh* mMesh;
   Material* mMaterial;
-  ShaderPropertyList mPropertyOverrides;
+  Integer3 mDispatchSize;
 };
 
 }//namespace Graphics

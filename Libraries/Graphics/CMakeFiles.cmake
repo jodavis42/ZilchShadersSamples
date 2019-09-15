@@ -7,6 +7,8 @@ target_sources(Graphics
     ${CMAKE_CURRENT_LIST_DIR}/ByteBuffer.hpp
     ${CMAKE_CURRENT_LIST_DIR}/Camera.cpp
     ${CMAKE_CURRENT_LIST_DIR}/Camera.hpp
+    ${CMAKE_CURRENT_LIST_DIR}/ComputePass.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/ComputePass.hpp
     ${CMAKE_CURRENT_LIST_DIR}/GraphicsStandard.hpp
     ${CMAKE_CURRENT_LIST_DIR}/GraphicsSpace.cpp
     ${CMAKE_CURRENT_LIST_DIR}/GraphicsSpace.hpp

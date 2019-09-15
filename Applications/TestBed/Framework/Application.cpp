@@ -9,6 +9,10 @@
 #include "JsonSerializer.hpp"
 #include "GraphicsSpace.hpp"
 
+#include "Renderer.hpp"
+#include "Model.hpp"
+#include "ComputePass.hpp"
+
 //-------------------------------------------------------------------Application
 Application::Application()
 {

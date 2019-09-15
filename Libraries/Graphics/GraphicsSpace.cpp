@@ -14,7 +14,7 @@
 #include "Model.hpp"
 #include "Material.hpp"
 #include "Camera.hpp"
-//#include "ComputePass.hpp"
+#include "ComputePass.hpp"
 
 namespace Graphics
 {

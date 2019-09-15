@@ -3,25 +3,25 @@
 ///////////////////////////////////////////////////////////////////////////////
 #include "Precompiled.hpp"
 
-#include "Model.hpp"
+#include "ComputePass.hpp"
 #include "Serializer.hpp"
-#include "Mesh.hpp"
 #include "Material.hpp"
 
 namespace Graphics
 {
 
-//-------------------------------------------------------------------Model
-Model::Model()
+//-------------------------------------------------------------------ComputePass
+ComputePass::ComputePass()
 {
   mMaterial = nullptr;
-  mMesh = nullptr;
+  mDispatchSize = Integer3(1, 1, 1);
 }
 
-void Model::Serialize(Serializer& serializer)
+void ComputePass::Serialize(Serializer& serializer)
 {
   __super::Serialize(serializer);
-  serializer.SerializeResourceField<MeshLibrary>("Mesh", mMesh);
   serializer.SerializeResourceField<MaterialLibrary>("Material", mMaterial);
+  serializer.SerializeField(mDispatchSize);
 }
+
 }//namespace Graphics
