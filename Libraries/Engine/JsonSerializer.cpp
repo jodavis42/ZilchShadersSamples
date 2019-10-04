@@ -1,9 +1,12 @@
 ///////////////////////////////////////////////////////////////////////////////
 /// Authors: Joshua Davis
 ///////////////////////////////////////////////////////////////////////////////
+#include "Precompiled.hpp"
+
 #include "JsonSerializer.hpp"
 
-#include "ZilchShadersStandard.hpp"
+namespace Engine
+{
 
 //-------------------------------------------------------------------JsonSerializer
 JsonSerializer::JsonSerializer()
@@ -194,3 +197,5 @@ void JsonSerializer::Read(String& value)
   else if(valueNode->Type == Zilch::JsonValueType::String)
     value = valueNode->AsString();
 }
+
+} // namespace Engine

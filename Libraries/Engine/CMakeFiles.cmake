@@ -19,6 +19,8 @@ target_sources(Engine
     ${CMAKE_CURRENT_LIST_DIR}/ResourceSystem.hpp
     ${CMAKE_CURRENT_LIST_DIR}/Serializer.cpp
     ${CMAKE_CURRENT_LIST_DIR}/Serializer.hpp
+    ${CMAKE_CURRENT_LIST_DIR}/JsonSerializer.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/JsonSerializer.hpp
     ${CMAKE_CURRENT_LIST_DIR}/Space.cpp
     ${CMAKE_CURRENT_LIST_DIR}/Space.hpp
     ${CMAKE_CURRENT_LIST_DIR}/Keyboard.cpp

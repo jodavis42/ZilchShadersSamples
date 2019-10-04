@@ -8,8 +8,6 @@ target_sources(Framework
     ${CMAKE_CURRENT_LIST_DIR}/ImGuiHelper.hpp
     ${CMAKE_CURRENT_LIST_DIR}/Application.cpp
     ${CMAKE_CURRENT_LIST_DIR}/Application.hpp
-    ${CMAKE_CURRENT_LIST_DIR}/JsonSerializer.cpp
-    ${CMAKE_CURRENT_LIST_DIR}/JsonSerializer.hpp
     ${CMAKE_CURRENT_LIST_DIR}/Project.cpp
     ${CMAKE_CURRENT_LIST_DIR}/Project.hpp
     ${CMAKE_CURRENT_LIST_DIR}/Level.cpp

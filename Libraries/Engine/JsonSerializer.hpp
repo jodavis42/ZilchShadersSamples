@@ -1,9 +1,12 @@
 ///////////////////////////////////////////////////////////////////////////////
 /// Authors: Joshua Davis
 ///////////////////////////////////////////////////////////////////////////////
-#include "FrameworkStandard.hpp"
+#include "EngineStandard.hpp"
 
 #include "Serializer.hpp"
+
+namespace Engine
+{
 
 //-------------------------------------------------------------------JsonSerializer
 class JsonSerializer : public Engine::Serializer
@@ -44,3 +47,5 @@ public:
   JsonValue* mRoot;
   Array<JsonValue*> mStack;
 };
+
+} // namespace Engine
