@@ -1,0 +1,4 @@
+{
+  "ShaderCoreDir": "${ShaderCoreDir}",
+  "ProjectsDir": "${ProjectsDir}"
+}
