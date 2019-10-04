@@ -1,0 +1,12 @@
+target_sources(DemoUtilities
+  PRIVATE
+    ${CMAKE_CURRENT_LIST_DIR}/Precompiled.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/Precompiled.hpp
+    ${CMAKE_CURRENT_LIST_DIR}/DemoUtilitiesStandard.hpp
+    ${CMAKE_CURRENT_LIST_DIR}/ShaderSerialization.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/ShaderSerialization.hpp
+    ${CMAKE_CURRENT_LIST_DIR}/Callbacks.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/Callbacks.hpp
+    ${CMAKE_CURRENT_LIST_DIR}/Helpers.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/Helpers.hpp
+)

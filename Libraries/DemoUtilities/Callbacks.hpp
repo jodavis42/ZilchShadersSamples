@@ -1,0 +1,15 @@
+///////////////////////////////////////////////////////////////////////////////
+/// Authors: Joshua Davis
+///////////////////////////////////////////////////////////////////////////////
+#pragma once
+
+#include "DemoUtilitiesStandard.hpp"
+
+
+namespace Demo
+{
+
+void ZilchCompilerErrorCallback(Zilch::ErrorEvent* e);
+void ZilchTranslationErrorCallback(Zero::TranslationErrorEvent* e);
+
+}//namespace Demo
