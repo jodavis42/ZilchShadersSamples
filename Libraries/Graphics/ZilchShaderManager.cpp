@@ -55,6 +55,7 @@ void ZilchShaderManager::Initialize(ResourceSystem* resourceSystem, ZilchShaderI
 
   mPipeline = new Zero::ShaderPipelineDescription();
   mPipeline->mDebugPasses.PushBack(new Zero::ZilchSpirVDisassemblerBackend());
+  mPipeline->mDebugPasses.PushBack(new Zero::SpirVValidatorPass());
   mPipeline->mBackend = backend;
 
   mDependencyDir = shaderDependenciesDir;

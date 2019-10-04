@@ -41,4 +41,4 @@ String Serializer::CleanupName(const String& name)
   return name;
 }
 
-}//namespace Engine;
+}//namespace Engine
