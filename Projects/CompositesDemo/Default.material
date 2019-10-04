@@ -1,0 +1,17 @@
+{
+  "Name": "Default",
+  "MaterialBlocks": [
+    {
+      "Name": "VertexTransforms"
+    },
+    {
+      "Name": "VertexApiPerspectivePosition"
+    },
+    {
+      "Name": "ImageSampler"
+    },
+    {
+      "Name": "ColorOutput"
+    }
+  ],
+}

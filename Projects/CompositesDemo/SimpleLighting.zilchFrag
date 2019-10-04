@@ -1,0 +1,12 @@
+[Pixel]
+struct SimpleLighting
+{
+  [Input] var DiffuseColor : Real3;
+
+  [Output] var Color : Real4;
+
+  function Main()
+  {
+    this.Color = Real4(this.DiffuseColor, 1);
+  }
+}

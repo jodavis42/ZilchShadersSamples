@@ -1,0 +1,15 @@
+[Pixel]
+struct UvTimeScale
+{
+  [Input] var FrameTime : Real;
+  [Input] var Frequency : Real = 1;
+
+  [Input][Output] var Uv : Real2;
+
+  function Main()
+  {
+    var scalar = Math.Sin(this.FrameTime * this.Frequency);
+    scalar = (scalar + 1.0) / 2.0;
+    this.Uv *= scalar;
+  }
+}

@@ -1,0 +1,16 @@
+[Pixel]
+struct SimpleDiffuse
+{
+  [Input] var DiffuseValue : Real3 = Real3(0, 0, 0.5);
+  [Input] var LightPosition : Real3 = Real3(0, 0, 1);
+  [Input] var ViewNormal : Real3;
+  [Input] var ViewPosition : Real3;
+  
+  [Output] var DiffuseColor : Real3;
+
+  function Main()
+  {
+    var normal = Math.Normalize(this.ViewNormal);
+    this.DiffuseColor = this.DiffuseValue * Math.Dot(this.LightPosition - this.ViewPosition, normal);
+  }
+}

@@ -1,0 +1,11 @@
+[Pixel]
+struct ColorOutput
+{
+  [Input] var Color : Real4;
+  [StageOutput] var Target0 : Real4;
+
+  function Main()
+  {
+    this.Target0 = this.Color;
+  }
+}

@@ -1,0 +1,13 @@
+[Pixel]
+struct ImageSampler
+{
+  [Input] var Uv : Real2;
+  [Input] var Image : SampledImage2d;
+
+  [Output] var Color : Real4;
+
+  function Main()
+  {
+    this.Color = this.Image.Sample(this.Uv);
+  }
+}

@@ -1,0 +1,14 @@
+[Pixel]
+struct UvPan
+{
+  [Input] var FrameTime : Real;
+  [Input] var Speed : Real2 = Real2(1);
+
+  [Input][Output] var Uv : Real2;
+
+  function Main()
+  {
+    this.Uv += this.FrameTime * this.Speed;
+    this.Uv = Math.Frac(this.Uv);
+  }
+}

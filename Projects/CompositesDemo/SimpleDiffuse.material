@@ -1,0 +1,20 @@
+{
+  "Name": "SimpleDiffuse",
+  "MaterialBlocks": [
+    {
+      "Name": "VertexTransforms"
+    },
+    {
+      "Name": "VertexApiPerspectivePosition"
+    },
+    {
+      "Name": "SimpleDiffuse"
+    },
+    {
+      "Name": "SimpleLighting"
+    },
+    {
+      "Name": "ColorOutput"
+    }
+  ],
+}

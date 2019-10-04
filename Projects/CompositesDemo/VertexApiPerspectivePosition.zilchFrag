@@ -1,0 +1,12 @@
+[Vertex]
+struct VertexApiPerspectivePosition
+{
+  [FragmentInput] var PerspectivePosition : Real4;
+
+  [HardwareBuiltInOutput] var ApiPerspectivePosition : Real4;
+
+  function Main()
+  {
+    this.ApiPerspectivePosition = this.PerspectivePosition;
+  }
+}
