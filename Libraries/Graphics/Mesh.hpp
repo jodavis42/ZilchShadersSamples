@@ -53,7 +53,7 @@ public:
 
   typedef Array<Vertex> Vertices;
   Vertices mVertices;
-  typedef Array<size_t> Indices;
+  typedef Array<uint32_t> Indices;
   Indices mIndices;
 
   size_t mIndexCount;
